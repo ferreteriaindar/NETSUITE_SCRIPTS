@@ -183,7 +183,7 @@ function( httpService, error, log, runtime, file, record ) {
                             averagecost                       : currentRecord.getValue( { fieldId : 'averagecost' } ),
                             cost                              : currentRecord.getValue( { fieldId : 'cost' } ),
                             lastpurchaseprice                 : currentRecord.getValue( { fieldId : 'lastpurchaseprice' } ),
-                            purchasedescription               : currentRecord.getValue( { fieldId : 'purchasedescription' } ),
+                            purchasedescription               : currentRecord.getValue( { fieldId : 'salesdescription' } ),
                             stockdescription                  : currentRecord.getValue( { fieldId : 'stockdescription' } ),
                             gainlossaccount                   : currentRecord.getValue( { fieldId : 'gainlossaccount' } ),
                             billpricevarianceacct             : currentRecord.getValue( { fieldId : 'billpricevarianceacct' } ),

@@ -1,4 +1,3 @@
-
 /**
  *@NApiVersion 2.x
  *@NScriptType Restlet
@@ -30,15 +29,18 @@ define(['SuiteScripts/INDAR SCRIPTS/httpService','N/error', 'N/record', 'N/forma
                 isDynamic: true
             });
 
-           
+
         } catch (e) {
             // error("error converting sales order to invoice: " + salesOrderInternalId);
             log.error('POST', JSON.stringify(e));
             return { 'responseStructure': { 'codeStatus': 'NOK', 'descriptionStatus': 'ERROR_CREA_SALESORDER ' }, 'internalId': '' };
         }
         try {
-           
+
             billRecord.setValue('custbody_nso_due_condition',3);
+            var hoy = new Date();
+            var receipt_date2 = format.parse( hoy, 'date' );
+            billRecord.setValue('custbody_nso_indr_receipt_date',receipt_date2);
             var idInvoice = billRecord.save({ ignoreMandatoryFields: true });
             log.debug('NSO_ID_SALES_ORDER_CREATE', idInvoice);
             SendInvoice(idInvoice);
@@ -54,7 +56,7 @@ define(['SuiteScripts/INDAR SCRIPTS/httpService','N/error', 'N/record', 'N/forma
 
 
     handler.put = function( context ) {
-       
+
         try {
 
            // validateContext(context);
@@ -66,7 +68,7 @@ define(['SuiteScripts/INDAR SCRIPTS/httpService','N/error', 'N/record', 'N/forma
                invoice.setValue('custbody_nso_indr_receipt_date',receipt_date);
             }
            invoice.save();
-           SendInvoice(invoice.internalId);
+          // SendInvoice(invoice.internalId);
            return { 'responseStructure': { 'codeStatus': 'OK', 'descriptionStatus': 'Fecha de Vencimiento Actualizada' }, 'internalId': invoice.internalId };
 
         } catch (error) {
@@ -74,7 +76,7 @@ define(['SuiteScripts/INDAR SCRIPTS/httpService','N/error', 'N/record', 'N/forma
             var errorText = 'ERROR CODE: ' + error.name + '\nDESCRIPTION: ' + error.message;
             return { 'responseStructure': { 'codeStatus': 'NOK', 'descriptionStatus': 'ERROR insertar FECHA VENCIMIENTO' + errorText }, 'internalId': '' };
         }
-        
+
     };
 
 
@@ -114,7 +116,6 @@ define(['SuiteScripts/INDAR SCRIPTS/httpService','N/error', 'N/record', 'N/forma
                 Status:        invoice.getValue( { fieldId : 'status' } ),
                 Entity: Number(invoice.getValue({fieldId:'entity'})),
                 TranDate: invoice.getValue({fieldId:'trandate'}),
-                Memo: 'OLA K ASE',//invoice.getValue({fieldId:'memo'}),
                 SubTotal: invoice.getValue({fieldId:'subtotal'}),
                 DiscountTotal: invoice.getValue({fieldId:'discounttotal'}),
                 TaxTotal: invoice.getValue({fieldId:'taxtotal'}),
@@ -148,15 +149,18 @@ define(['SuiteScripts/INDAR SCRIPTS/httpService','N/error', 'N/record', 'N/forma
                 Currency:Number( invoice.getValue({fieldId:'currency'})),
                 FechaProntoPago:  invoice.getValue({fieldId:'custbody_nso_indr_discount_date'}),
                 AprobacionDescuentos: invoice.getValue({fieldId:'custbody_nso_indr_discount_approval'}),
-                custbody_refpdf: invoice.getValue({fieldId: 'custbody_refpdf'})
+                custbody_refpdf: invoice.getValue({fieldId: 'custbody_refpdf'}),
+             	 custbody_cfdi_metpago_sat: invoice.getText({fieldId:'custbody_cfdi_metpago_sat'}),
+                    custbody_cfdi_formadepago: invoice.getText({fieldId:'custbody_cfdi_formadepago'}),
+                    custbody_uso_cfdi: invoice.getText({fieldId:'custbody_uso_cfdi'}),
+                    currencysymbol: invoice.getText({fieldId:'currencysymbol'})
             };
 
             valoresFactura.lineItems= { item:lineas };
             valoresFactura = JSON.stringify(valoresFactura)
 
            // var archivo = generaArchivo(valoresFactura, currentRecord.getValue({ fieldId: 'tranid' }));
-            httpService.post('api/Invoice/InsertInvoice', valoresFactura ); 
-            
+            httpService.post('api/Invoice/InsertInvoice', valoresFactura );
         }catch(e)
         {
 

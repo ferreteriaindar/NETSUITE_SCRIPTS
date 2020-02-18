@@ -104,7 +104,12 @@
 
                     };
                     valoresFactura.lineItems= { item:lineas };
+                    var dosDiasMas=new Date();
+                    dosDiasMas.setDate(dosDiasMas.getDate() + 2);
+                    nuevo.setValue('custbody_nso_indr_receipt_date',dosDiasMas);
+                    nuevo.save({ ignoreMandatoryFields: true });
                     valoresFactura = JSON.stringify(valoresFactura)
+                    
                     log.error('json',valoresFactura);
                     httpService.post('api/Invoice/InsertInvoice', valoresFactura );
                     return;

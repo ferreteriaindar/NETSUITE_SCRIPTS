@@ -37,12 +37,13 @@ define(['SuiteScripts/INDAR SCRIPTS/httpService','N/sftp', 'N/search', 'N/error'
                         taxrate1                            : currentRecord.getSublistValue( { sublistId: 'item', line: i, fieldId: 'taxrate1' } ),
                         quantity                            : currentRecord.getSublistValue( { sublistId: 'item', line: i, fieldId: 'quantity' } ),
                         grossamt                            : currentRecord.getSublistValue( { sublistId: 'item', line: i, fieldId: 'grossamt' } ), 
-                        DiscountTotal                       : currentRecord.getSublistValue( { sublistId: 'item', line: i,fieldId: 'custcol_nso_descuento'}),                   
+                        DiscountTotal                       : currentRecord.getSublistValue( { sublistId: 'item', line: i,fieldId: 'custcol_nso_descuento'}),
                         isclosed                            : currentRecord.getSublistValue( { sublistId: 'item', line: i, fieldId: 'isclosed' } )
 
-                        
+
                     });
                 }
+               log.debug('TRANID',Number( currentRecord.getValue({ fieldId: 'tranid' })));
                 valoresFactura = {
                     internalId: currentRecord.getValue({fieldId:'id'}),
                     TranId:Number( currentRecord.getValue({ fieldId: 'tranid' })),
@@ -84,7 +85,11 @@ define(['SuiteScripts/INDAR SCRIPTS/httpService','N/sftp', 'N/search', 'N/error'
                     Currency:Number( currentRecord.getValue({fieldId:'currency'})),
                     FechaProntoPago:  currentRecord.getValue({fieldId:'custbody_nso_indr_discount_date'}),
                     AprobacionDescuentos: currentRecord.getValue({fieldId:'custbody_nso_indr_discount_approval'}),
-                    custbody_refpdf: currentRecord.getValue({fieldId: 'custbody_refpdf'})
+                    custbody_refpdf: currentRecord.getValue({fieldId: 'custbody_refpdf'}),
+                    custbody_cfdi_metpago_sat: currentRecord.getText({fieldId:'custbody_cfdi_metpago_sat'}),
+                    custbody_cfdi_formadepago: currentRecord.getText({fieldId:'custbody_cfdi_formadepago'}),
+                    custbody_uso_cfdi: currentRecord.getText({fieldId:'custbody_uso_cfdi'}),
+                    currencysymbol: currentRecord.getText({fieldId:'currencysymbol'})
 
 
 
@@ -96,7 +101,8 @@ define(['SuiteScripts/INDAR SCRIPTS/httpService','N/sftp', 'N/search', 'N/error'
                 valoresFactura = JSON.stringify(valoresFactura)
                 //log.debug(valoresFactura);
                 //var archivo = generaArchivo(valoresFactura, currentRecord.getValue({ fieldId: 'tranid' }));
-                httpService.post('api/Invoice/InsertInvoice', valoresFactura );  
+                httpService.post('api/Invoice/InsertInvoice', valoresFactura );
+               generaArchivo(valoresFactura, currentRecord.getValue({ fieldId: 'tranid' }));
 
             } catch (ex) {
                 log.error('Error en la creación y guardado del JSON en netsuite', ex);
