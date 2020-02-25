@@ -48,7 +48,7 @@ define( ['N/error', 'N/record', 'N/format' , 'N/search', 'N/query'], function( e
                     search.createColumn({name: "duedate", label: "Fecha Vencimiento"}),
                     search.createColumn({
                         name: "formulanumeric",
-                        formula: "ROUND({duedate}-{today},0)",
+                        formula: "ROUND({today}-{duedate},0)",
                         label: "Dias Vencidos"
                     }),
                     search.createColumn({name: "amount", label: "Amount"}),
