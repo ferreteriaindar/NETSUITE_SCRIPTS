@@ -155,11 +155,23 @@ define( ['N/error', 'N/record', 'N/format', 'N/search'], function( error, record
             var hoy = new Date();
             var receipt_date2 = format.parse( hoy, 'date' );
             billRecord.setValue('custbody_nso_indr_receipt_date',receipt_date2);
+              /*Disc prov*/
+            var total = billRecord.getValue({fieldId:'total'});
+          	var disc = billRecord.getValue({fieldId:'custbody_nso_indr_client_discount'});
+          	disc = parseFloat(disc)/100;
+            var discAmount = total * disc;
+          	log.debug('total: ', total);
+          	log.debug('discount: ', disc);
+            log.debug('discountAmount: ', discAmount.toFixed(4));
+            billRecord.setValue('custbody_nso_indr_total_discount',discAmount.toFixed(4));
+            billRecord.setValue('custbody_nso_indr_discount_16p',discAmount.toFixed(2));
+              /*END Disc*/
             var idInvoice = billRecord.save({ ignoreMandatoryFields: true });
+            log.debug('idInvoice', idInvoice);
             } catch ( e ) {
                     log.error( 'POST', JSON.stringify( e ) );
                     var errorText = 'ERROR CODE: ' + e.name + 'DESCRIPTION: ' + e.message;
-                    return { 'responseStructure': { 'codeStatus': 'NOK', 'descriptionStatus': 'ERROR AL FACTURAR' + errorText }, 'internalId': idInvoice};
+                    return { 'responseStructure': { 'codeStatus': 'NOK', 'descriptionStatus': 'ERROR AL FACTURAR' + errorText }, 'internalId': 0};
             } 
 
 
@@ -169,7 +181,7 @@ define( ['N/error', 'N/record', 'N/format', 'N/search'], function( error, record
 		} catch ( e ) {
 			log.error( 'POST', JSON.stringify( e ) );
 			var errorText = 'ERROR CODE: ' + e.name + 'DESCRIPTION: ' + e.message;
-			return { 'responseStructure': { 'codeStatus': 'NOK', 'descriptionStatus': 'ERROR FULFILMMENT' + errorText }, 'internalId': itemFulfillMentId };
+			return { 'responseStructure': { 'codeStatus': 'NOK', 'descriptionStatus': 'ERROR FULFILMMENT' + errorText }, 'internalId': 0 };
 		}
 	};
 	
