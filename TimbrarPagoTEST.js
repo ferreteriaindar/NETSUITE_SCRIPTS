@@ -18,7 +18,7 @@ function timbraNotasDeCredito(context  ) {
      
         }*/
         nlapiLogExecution( 'ERROR', 'entrar', context.internalId );
-      var resultado= generaTimbrado(context.id,'type_transaction')
+      var resultado= generaTimbrado(context.internalId,'customerpayment')
       return resultado==null?'OK':resultado;
     } catch (e) {
         nlapiLogExecution( 'ERROR', 'timbraNotasDeCredito', JSON.stringify( e ) );
@@ -32,6 +32,8 @@ function generaTimbrado( id_transaction, type_transaction ) {
     
     var oneworld        = setupcfdi.getFieldValue( 'custrecord_cfdi_oneworld' );
     var billforlocation = setupcfdi.getFieldValue( 'custrecord_cfdi_location_testing' );
+    nlapiLogExecution( 'ERROR', 'oneworld', oneworld ) ;
+    nlapiLogExecution( 'ERROR', 'billforlocation', billforlocation ) ;
     var testing         = setupcfdi.getFieldValue( 'custrecord_cfdi_testing' );
     var folder          = setupcfdi.getFieldValue( 'custrecord_cfdi_pdf_files' )||'';
     var setup           = null;
@@ -43,7 +45,7 @@ function generaTimbrado( id_transaction, type_transaction ) {
     var location        = transaction.getFieldValue( 'location' );
     var ScriptSuit      = 'customscript_cfdi';
     var ScriptSuitDepl  = 'customdeploy_cfdi';
-
+    nlapiLogExecution( 'ERROR', 'AntesOnewORD','SI') ;
     if ( oneworld == 'T' ) {
         if ( billforlocation == 'T' ) {
            // setup = nlGetSetupRecord( subsidiary, location );
@@ -82,9 +84,9 @@ function generaTimbrado( id_transaction, type_transaction ) {
     else{
         var path      = setup.getFieldValue( 'custrecord_cfdi_path' ) + "\\" + tranid + ".xml";
     }
-    var xml             = nlapiGetFieldValue( 'custbody_cfdixml' );
+    var xml             =transaction.getFieldValue('custbody_cfdixml'); //nlapiGetFieldValue( 'custbody_cfdixml' );
     var validaTimbrado  = 'F';
-
+    nlapiLogExecution( 'ERROR', 'VAR XML',xml) ;
     if ( (xml == null || xml == '' ) ) {
         
             if ( ( ScriptSuit != null && ScriptSuit != '') && ( ScriptSuitDepl!= null && ScriptSuitDepl != '' ) ) {

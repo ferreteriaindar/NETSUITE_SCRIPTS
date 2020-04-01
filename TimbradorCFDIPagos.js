@@ -181,6 +181,7 @@ function nsoSendToWS(sAccion, sData1, sData2, wId, wtype, sRequestor, sEntity, s
 		var check = true;
 		try{
 			if (wtype == 'customerpayment'){
+				nlapiLogExecution( 'ERROR', 'CFDITIMBRADA','SI ENTRA') ;
 				var payment = nlapiLoadRecord(wtype, wId);
 				payment.setFieldValue('custbody_cfdi_timbrada', 'T');
 				nlapiSubmitRecord(payment);//Es necesario para activar el script que genera parcialidades
@@ -220,6 +221,7 @@ function nsoSendToWS(sAccion, sData1, sData2, wId, wtype, sRequestor, sEntity, s
 
 		if(sAccion == 0 || sAccion == 3 || sAccion == 6)
 		{
+			nlapiLogExecution( 'ERROR', 'accion0','SI ENTRA') ;
 			var oXml      = '';
 			var nodeValue = '';
 			oXml          = nlapiStringToXML(valueBody);
@@ -245,7 +247,9 @@ function nsoSendToWS(sAccion, sData1, sData2, wId, wtype, sRequestor, sEntity, s
 							Folio = Serie + Folio;
 							UUID = TimbreFiscalDigital[0].getAttribute('UUID')||'';
 						}
-						nlapiSubmitField(nlapiGetRecordType(), nlapiGetRecordId(), [IdXMLBody, "custbody_foliosat", "custbody_uuid"],  [values[0], Folio, UUID ]);
+						nlapiLogExecution( 'ERROR', 'uuid','SI ENTRA') ;
+						nlapiSubmitField(wtype, wId, [IdXMLBody, "custbody_foliosat", "custbody_uuid"],  [values[0], Folio, UUID ]);
+						nlapiLogExecution( 'ERROR', 'uuid','SI sale') ;
 					}
 				}
 				catch(ex){
@@ -262,6 +266,7 @@ function nsoSendToWS(sAccion, sData1, sData2, wId, wtype, sRequestor, sEntity, s
 			}
 			if( check == false){
 				try{
+					nlapiLogExecution( 'ERROR', 'PDF','SI ') ;
 					wrecord.setFieldValue('custbody_cfdi_timbrada', 'T');
 					if(Folio != null && Folio != ''){
 						wrecord.setFieldValue("custbody_foliosat", Folio);
@@ -277,6 +282,7 @@ function nsoSendToWS(sAccion, sData1, sData2, wId, wtype, sRequestor, sEntity, s
 					}
 					var saverec = nlapiSubmitRecord(wrecord, true, true);
 					xmlResult = null;
+					nlapiLogExecution( 'ERROR', 'PDF','TERMINA ') ;
 				}
 				catch(ex){
 					nlapiLogExecution('ERROR', ex instanceof nlobjError ? ex.getCode() : "CUSTOM_ERROR_CODE",
