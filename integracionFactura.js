@@ -66,7 +66,8 @@ define(['SuiteScripts/INDAR SCRIPTS/httpService','N/sftp', 'N/search', 'N/error'
                     LeadSource: currentRecord.getValue({fieldId:'leadsource'}),
                     DepartamentoCliente: currentRecord.getValue({fieldId:'custbody2'}),
                     TipoPedido:Number( currentRecord.getValue({fieldId:'custbody_tipo_pedido'})),
-                    ClienteContado: Number( currentRecord.getValue({fieldId:'custbody_tipo_pedido'})),
+                   // ClienteContado: Number( currentRecord.getValue({fieldId:'custbody_tipo_pedido'})),
+                   ClienteContado:  currentRecord.getValue({fieldId:'custbody_cte_contado'})=='Crédito'?0:1,
                     RFC: currentRecord.getValue({fieldId:'custbody_rfc'}),
                     UUID: currentRecord.getValue({fieldId:'custbody_uuid'}),
                     OrdenCompra: currentRecord.getValue({fieldId:'custbody_orden_compra'}),
@@ -86,16 +87,12 @@ define(['SuiteScripts/INDAR SCRIPTS/httpService','N/sftp', 'N/search', 'N/error'
                     FechaProntoPago:  currentRecord.getValue({fieldId:'custbody_nso_indr_discount_date'}),
                     AprobacionDescuentos: currentRecord.getValue({fieldId:'custbody_nso_indr_discount_approval'}),
                     custbody_refpdf: currentRecord.getValue({fieldId: 'custbody_refpdf'}),
-                    custbody_cfdi_metpago_sat: currentRecord.getText({fieldId:'custbody_cfdi_metpago_sat'}),
+                  	custbody_cfdi_metpago_sat: currentRecord.getText({fieldId:'custbody_cfdi_metpago_sat'}),
                     custbody_cfdi_formadepago: currentRecord.getText({fieldId:'custbody_cfdi_formadepago'}),
                     custbody_uso_cfdi: currentRecord.getText({fieldId:'custbody_uso_cfdi'}),
-                    currencysymbol: currentRecord.getText({fieldId:'currencysymbol'})
-
-
-
-
-
-
+                    currencysymbol: currentRecord.getText({fieldId:'currencysymbol'}),
+                    cfdiComentario: currentRecord.getValue({fieldId:'custbody_nso_cfdi_comentario'}),
+                    responseCfdi: currentRecord.getValue({fieldId:'custbody_nso_cfdc_response_mysuite'})
                 };
                 valoresFactura.lineItems= { item:lineas };
                 valoresFactura = JSON.stringify(valoresFactura)

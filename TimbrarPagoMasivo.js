@@ -10,17 +10,16 @@
 * Descripción Realiza el timbrado de las notas de crédito de pronto pago.
 *************************************************************/
 
-function timbraNotasDeCredito(  ) {
+function timbraNotasDeCredito( context ) {
     try {
-		/*var creditMemos = nlapiGetContext().getSetting('SCRIPT', 'custscript_nso_viv_notas_credito').split( ',' );
-		for ( var i = 0; i < creditMemos.length; i++ ) {
-            generaTimbrado( creditMemos[i], 'creditmemo' );
-     
-        }*/
       
-      var idPago = nlapiGetContext().getSetting('SCRIPT', 'custscript_zindar_id_payment');
-        nlapiLogExecution( 'ERROR', 'entrar',idPago );
-      var resultado= generaTimbrado(idPago,'customerpayment')
+            /*var creditMemos = nlapiGetContext().getSetting('SCRIPT', 'custscript_nso_viv_notas_credito').split( ',' );
+            for ( var i = 0; i < creditMemos.length; i++ ) {
+                generaTimbrado( creditMemos[i], 'creditmemo' );
+         
+            }*/
+            nlapiLogExecution( 'ERROR', 'entrar', context.internalId );
+          var resultado= generaTimbrado(context.internalId,'customerpayment')
       if(resultado!=null)
       enviarEmail(idPago,resultado);
       return resultado==null?'OK':resultado;
