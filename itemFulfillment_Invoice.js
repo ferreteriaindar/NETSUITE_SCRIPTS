@@ -6,7 +6,7 @@
  *@NModuleScope Public
  */
 
-define( ['N/error', 'N/record', 'N/format', 'N/search'], function( error, record, format, search ) {
+define( ['N/error', 'N/record', 'N/format', 'N/search','N/email'], function( error, record, format, search,email ) {
 	
 	var handler = {};
 	
@@ -72,17 +72,124 @@ define( ['N/error', 'N/record', 'N/format', 'N/search'], function( error, record
 	
 	function addItemFulfillMentLines( itemFulfillMent, context ) {
 		var itemsPosition = {};
+		var LineasFulfillMent=[];
+		var LineasContext=[];
+		//Se llena arreglo  de la lista de articulos y cantidad que tiene  Fulfillmnet
 		for ( var i = 0; i < itemFulfillMent.getLineCount( 'item' ); i ++ ) {
 			itemsPosition[ itemFulfillMent.getSublistValue( 'item',  'item', i ) ] = i;
+			LineasFulfillMent.push({itemId: itemFulfillMent.getSublistValue( 'item',  'item', i ),quantity: itemFulfillMent.getSublistValue( 'item',  'quantity', i ), line:itemFulfillMent.getSublistValue( 'item',  'line', i )});
 		}
+		//Se llena arreglo de la lista de articulos del context
+
+	
+		log.error('itemsPosition',itemsPosition);
+		log.error('LineasFulfillMent',LineasFulfillMent);
 		var inventoryNumbers = getInventoryNumbers( Object.keys( itemsPosition ) ).item;
+	
 		var lines = context.lines;
 		for ( var i = 0; i < lines.length; i ++ ) {
+			LineasContext.push({ itemId: lines[i].itemId,quantity:lines[i].quantity,location:lines[i].location,inventorydetail:lines.inventorydetail});
+
+		}
+		log.error('LineasContext',LineasContext);
+		for(var i=0;i<LineasFulfillMent.length;i++)
+		{
+			log.error('LineaFulfill',LineasFulfillMent[i].line);
+			itemFulfillMent.selectLine( { sublistId: 'item', line: i } );
+			itemFulfillMent.setCurrentSublistValue( 'item', 'apply', 'T' );
+			var  itemId=itemFulfillMent.getCurrentSublistValue('item','item');
+			log.error('itemActual',itemId);
+			// se recorre  el context por cada linea del fulfillment
+			for(var j=0;j<LineasContext.length;j++)
+			{
+				if(itemId==LineasContext[j].itemId )
+				{
+					log.error('Entra'+itemId,'si');
+					itemFulfillMent.setCurrentSublistValue( { sublistId: 'item', fieldId: 'location', value: LineasContext[j].location } );
+					
+					if(LineasFulfillMent[i].quantity<LineasContext[j].quantity)
+					{
+						log.error('entraResta','si');
+						itemFulfillMent.setCurrentSublistValue( { sublistId: 'item', fieldId: 'quantity', value: LineasFulfillMent[i].quantity } );
+						LineasContext[j].quantity=Number(LineasContext[j].quantity)-Number(LineasFulfillMent[i].quantity);
+						log.error('ContextResultado',LineasContext);
+					}
+					else  
+						{
+							if(LineasContext[j].quantity==0)
+							{
+								itemFulfillMent.setCurrentSublistValue( 'item', 'apply', 'F' );
+								itemFulfillMent.setCurrentSublistValue( { sublistId: 'item', fieldId: 'quantity', value: '' } );
+							}
+							else
+								{itemFulfillMent.setCurrentSublistValue( { sublistId: 'item', fieldId: 'quantity', value: LineasContext[j].quantity } );}
+								if(LineasFulfillMent[i].quantity>LineasContext[j].quantity)
+								{
+									 LineasContext[j].quantity=0;
+								}
+								log.error('ContextResultado2',LineasContext);	
+						}
+								
+					//TEMA  DE NUMEROS DE SERIE Y LOTE   NO ESTA PROBADO POR QUE NO LO USAMOS EN INDAR
+					if ( itemFulfillMent.getCurrentSublistValue( { sublistId: 'item', fieldId: 'inventorydetailreq' } ) == 'T' && context.createdfrom.recordType == 'salesorder' ) {
+						if ( inventoryNumbers[LineasFulfillMent[i].itemId][LineasFulfillMent[i].location ] ) {
+							var inventoryDetail = itemFulfillMent.getCurrentSublistSubrecord( 'item', 'inventorydetail' );
+							setLotNumbers( inventoryDetail, inventoryNumbers[LineasFulfillMent[i].itemId][LineasFulfillMent[i].location ] ,LineasFulfillMent[i].quantity );
+						} else {
+							if ( LineasContext[j].inventorydetail ) {
+								if ( LineasContext[j].inventorydetail.length > 0 ) {
+									for ( var z = 0; z< LineasContext[j].inventorydetail.length; z++ ) {
+										inventoryDetail.selectNewLine( 'inventoryassignment' );
+										if ( LineasContext[j].inventorydetail[z].binNumber ) {
+											inventoryDetail.setCurrentSublistValue( 'inventoryassignment', 'binnumber', LineasContext[j].inventorydetail[z].binNumber );
+										}
+										inventoryDetail.setCurrentSublistValue( 'inventoryassignment', 'quantity', LineasContext[j].inventorydetail[z].quantity );
+										inventoryDetail.commitLine( 'inventoryassignment' );
+									}
+								}
+							}
+							
+						}
+					}	
+					////FIN DE  NUMEROS DE SERIE
+					itemFulfillMent.commitLine( 'item' );
+				}
+			
+		
+			}
+			//PROCESO PARA CERRAR NO LO SURTIDO
+			
+		}
+		log.error('contextFinal',LineasContext);
+		for ( var i = 0; i < itemFulfillMent.getLineCount( 'item' ); i ++ ) 
+			{
+				var bandera=0
+				for (var j = 0; j < LineasContext.length; j++) {
+					if(	itemFulfillMent.getSublistValue( 'item',  'item', i )==LineasContext[j].itemId)
+					bandera=1;
+					
+				}
+				if(bandera==0)
+				{
+					itemFulfillMent.selectLine( { sublistId: 'item', line: i } );
+					itemFulfillMent.setCurrentSublistValue( 'item', 'apply', 'F' );
+					itemFulfillMent.setCurrentSublistValue( { sublistId: 'item', fieldId: 'quantity', value: '' } );
+					itemFulfillMent.commitLine( 'item' );
+
+				}
+			
+			}
+		/*for ( var i = 0; i < lines.length; i ++ ) {
 			if ( itemsPosition[lines[i].itemId] != null ) {
+	
 				itemFulfillMent.selectLine( { sublistId: 'item', line: itemsPosition[lines[i].itemId] } );
+			
+				log.error('item','Renglon:'+itemFulfillMent.getCurrentSublistValue( 'item',  'line' )+':'+itemFulfillMent.getCurrentSublistValue( 'item',  'item' )+'LINES: '+lines[i].itemId+':'+lines[i].quantity);
+				
 				itemFulfillMent.setCurrentSublistValue( 'item', 'apply', 'T' );
 				itemFulfillMent.setCurrentSublistValue( { sublistId: 'item', fieldId: 'location', value: lines[i].location } );
 				itemFulfillMent.setCurrentSublistValue( { sublistId: 'item', fieldId: 'quantity', value: lines[i].quantity } );
+
 				if ( itemFulfillMent.getCurrentSublistValue( { sublistId: 'item', fieldId: 'inventorydetailreq' } ) == 'T' && context.createdfrom.recordType == 'salesorder' ) {
 					if ( inventoryNumbers[lines[i].itemId][lines[i].location ] ) {
 						var inventoryDetail = itemFulfillMent.getCurrentSublistSubrecord( 'item', 'inventorydetail' );
@@ -103,15 +210,13 @@ define( ['N/error', 'N/record', 'N/format', 'N/search'], function( error, record
 					}
 				}
 				itemFulfillMent.commitLine( 'item' );
+
+				log.error('fulfillment',JSON.stringify( itemFulfillMent.getSublist({sublistId: 'item'}) ));
 			}
+		
 			delete itemsPosition[lines[i].itemId];
-		}
-		for ( var key in itemsPosition ) {
-			itemFulfillMent.selectLine( { sublistId: 'item', line: itemsPosition[key] } );
-			itemFulfillMent.setCurrentSublistValue( 'item', 'apply', 'F' );
-			itemFulfillMent.setCurrentSublistValue( { sublistId: 'item', fieldId: 'quantity', value: '' } );
-			itemFulfillMent.commitLine( 'item' );
-		}
+		} */
+		
 	}
 	
 	handler.post = function( context ) {
@@ -143,9 +248,9 @@ define( ['N/error', 'N/record', 'N/format', 'N/search'], function( error, record
 			var itemFulfillMentId = itemFulfillMent.save();
             log.audit( 'itemFulfillMent ID', JSON.stringify( itemFulfillMentId ) );
             //SE  FACTURA  EL PEDIDO  YA QUE SE TERMINA EL ITEMFULFILLMENT
-
+			
             try{
-            var billRecord = record.transform({
+              var billRecord = record.transform({
                 fromType: record.Type.SALES_ORDER,
                 fromId: context.createdfrom.id,
                 toType: record.Type.INVOICE,
@@ -155,7 +260,7 @@ define( ['N/error', 'N/record', 'N/format', 'N/search'], function( error, record
             var hoy = new Date();
             var receipt_date2 = format.parse( hoy, 'date' );
             billRecord.setValue('custbody_nso_indr_receipt_date',receipt_date2);
-              /*Disc prov*/
+              ///*Disc prov
             var total = billRecord.getValue({fieldId:'total'});
           	var disc = billRecord.getValue({fieldId:'custbody_nso_indr_client_discount'});
           	disc = parseFloat(disc)/100;
@@ -165,12 +270,12 @@ define( ['N/error', 'N/record', 'N/format', 'N/search'], function( error, record
             log.debug('discountAmount: ', discAmount.toFixed(4));
             billRecord.setValue('custbody_nso_indr_total_discount',discAmount.toFixed(4));
             billRecord.setValue('custbody_nso_indr_discount_16p',discAmount.toFixed(2));
-              /*END Disc*/
+             // /*END Disc
 			var idInvoice = billRecord.save({ ignoreMandatoryFields: true });
 			log.debug('idInvoice', idInvoice);
 			log.error('Antes de cerrar SO','');
 			//AQUI   CERRAMOS EL PEDIDO SI ES QUE QUEDÓ PARCIAL Y GENERAMOS VENTAPERDIDA
-			cerrarSaleOrder(context.createdfrom.id);
+			cerrarSaleOrder(context.createdfrom.id);  
          
             } catch ( e ) {
                     log.error( 'POST', JSON.stringify( e ) );
@@ -178,7 +283,7 @@ define( ['N/error', 'N/record', 'N/format', 'N/search'], function( error, record
                     return { 'responseStructure': { 'codeStatus': 'NOK', 'descriptionStatus': 'ERROR AL FACTURAR' + errorText }, 'internalId': 0};
             } 
 
-
+				
 
 
 			return { 'responseStructure': { 'codeStatus': 'OK', 'descriptionStatus': '' }, 'internalId': idInvoice };
@@ -194,6 +299,7 @@ define( ['N/error', 'N/record', 'N/format', 'N/search'], function( error, record
 		for ( var i = 0; i < itemFulfillMent.getLineCount( 'item' ); i ++ ) {
 			itemsPosition[ itemFulfillMent.getSublistValue( 'item',  'item', i ) ] = i;
 		}
+	
 		var inventoryNumbers = getInventoryNumbers( Object.keys( itemsPosition ) ).name;
 		var lines = context.lines;
 		for ( var i = 0; i < lines.length; i ++ ) {
@@ -244,7 +350,7 @@ define( ['N/error', 'N/record', 'N/format', 'N/search'], function( error, record
               log.error('LINEAS',SaleOrder.getLineCount({sublistId: 'item'}));
               for (var i = 0; i < SaleOrder.getLineCount({sublistId: 'item'}); i++) {
               
-                  if(SaleOrder.getSublistValue( { sublistId: 'item', line: i, fieldId: 'quantityfulfilled' } )==0)
+                  /*if(SaleOrder.getSublistValue( { sublistId: 'item', line: i, fieldId: 'quantityfulfilled' } )==0)
                   {
                       
                   SaleOrder.setSublistValue({
@@ -253,7 +359,7 @@ define( ['N/error', 'N/record', 'N/format', 'N/search'], function( error, record
                                                   line: i,
                                                   value: true
                                               });
-                  }
+                  }*/
                   if(SaleOrder.getSublistValue( { sublistId: 'item', line: i, fieldId: 'quantityfulfilled' } )<SaleOrder.getSublistValue( { sublistId: 'item', line: i, fieldId: 'quantity' } ))
                   {
                       log.error('Detecta Parcial','si'+SaleOrder.getSublistText({ sublistId: 'item', line: i, fieldId: 'item' }));
@@ -308,9 +414,9 @@ define( ['N/error', 'N/record', 'N/format', 'N/search'], function( error, record
             ventaPerdida.setValue('custrecord_ventaperdida_fecha',receipt_date2);
             ventaPerdida.setValue({fieldId:'custrecord_ventaperdida_cliente',value:saleOrder.getValue('entity')});
            var idVentaperdida= ventaPerdida.save({ignoreMandatoryFields:true});
-            log.error( 'vp json', JSON.stringify( ventaPerdida ) );
-            log.error( 'name', ventaPerdida.getValue('name') );
-            log.error( 'id', idVentaperdida);
+           // log.error( 'vp json', JSON.stringify( ventaPerdida ) );
+           // log.error( 'name', ventaPerdida.getValue('name') );
+           // log.error( 'id', idVentaperdida);
             for (var i = 0; i < lineas.length; i++) {
                 var ventaPerdidaART = record.create({
                     type: 'customrecord_ventaperdida_articulorecord',
@@ -321,8 +427,87 @@ define( ['N/error', 'N/record', 'N/format', 'N/search'], function( error, record
                     ventaPerdidaART.setValue('custrecord_articulorecord_pedidoid',idVentaperdida);
                     ventaPerdidaART.save({ignoreMandatoryFields:true});
                    
-            }
-     };
+			}
+			enviarEmail(saleOrder.getValue('id'));
+			
+	 };
+	 
+	 function enviarEmail(SaleOrderID)
+	 {
+
+		var SaleOrder=record.load({ type: record.Type.SALES_ORDER, id: SaleOrderID,isDynamic: true  });
+
+		log.error('ENVIAR EMAIL','SI');
+  
+      var myvar = '<h3 style="text-align: center;"><span style="background-color: #ff9900; color: #ffffff;">AVISO</span></h3>'+
+      '<p style="text-align: left;">Este correo es para avisarte  que algunas partidas  del pedido <strong> '+SaleOrder.getValue('tranid')+' </strong> del cliente <strong>'+SaleOrder.getText('entity')+' </strong> no fueron surtidas. El resto de artículos de este pedido seguira su proceso normal de surtido. Según creas conveniente, avisa a tu cliente. Este correo es informativo, favor de no contestarlo. </p>'+
+      '<p style="text-align: left;"></p>'+
+      '<ul>'+
+      '';
+      log.error('LINEAS',SaleOrder.getLineCount({sublistId: 'item'}));
+     
+      for (var i = 0; i < SaleOrder.getLineCount({sublistId: 'item'}); i++) {
+        log.error('cerrado',SaleOrder.getSublistValue( { sublistId: 'item', line: i, fieldId: 'isclosed' } ));
+        log.error('cerradoText',SaleOrder.getSublistText( { sublistId: 'item', line: i, fieldId: 'isclosed' } ));
+        if(SaleOrder.getSublistText( { sublistId: 'item', line: i, fieldId: 'isclosed' } )=='T')
+                  {
+                    log.error('entra','si');
+                      myvar=myvar+'  <li><strong>'+SaleOrder.getSublistText({sublistId: 'item', line: i, fieldId: 'item'})+'</strong>      '+SaleOrder.getSublistValue({sublistId: 'item', line: i, fieldId: 'quantity'})+' '+SaleOrder.getSublistText({sublistId: 'item', line: i, fieldId: 'units'})+'</li>'
+                  }
+      };
+      myvar=myvar+'</ul>';
+
+     var recipients=buscarecipients(SaleOrder.getValue('entity'));
+      log.error('rrr',recipients);
+      recipients.push(7); 
+
+      email.send({
+              author: 34,
+              recipients: recipients,
+              subject: "Partida cancelada en WMS - No Responder",
+              body: myvar  
+    		  });
+
+	 };
 	
+
+	 function buscarecipients(internalid)
+	 {
+				  var json=[];
+				  var customerSearchObj = search.create({
+					type: "customer",
+					filters:
+					[
+					  ["internalid","anyof",internalid]
+					],
+					columns:
+					[
+					  search.createColumn({name: "custentity_apoyo_vtas", label: "Apoyo ventas"}),
+					  search.createColumn({name: "custentity_representaventas", label: "Representante vtas"})
+					]
+				});
+				var resultados=  customerSearchObj.runPaged({
+				  pageSize: 1000
+				});
+				var k = 0;
+				  resultados.pageRanges.forEach(function(pageRange) {
+					var pagina = resultados.fetch({ index: pageRange.index });
+					pagina.data.forEach(function(r) {
+						k++
+					json.push(
+						  //  "articulo": r.getValue({name:"Item"}),
+							Number( r.getValue({name:'custentity_apoyo_vtas'}))
+					);
+					json.push(
+					 Number( r.getValue({name:'custentity_representaventas'})  )
+					)
+				});
+			});
+	
+			return json;
+	 }
+
+
+	 
 	return handler;
 } );

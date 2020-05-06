@@ -139,7 +139,7 @@ define( ['N/log','N/error', 'N/record', 'N/format' , 'N/search', 'N/email'], fun
                 
             
         }
-        var recipients= [context.apoyo,context.vendedor,7];
+        var recipients= [context.apoyo,context.vendedor];
         if(context.compras==1)
         recipients.push( 16 );
         

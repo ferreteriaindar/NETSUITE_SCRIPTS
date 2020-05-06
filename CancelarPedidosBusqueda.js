@@ -33,6 +33,7 @@ define( ['N/error', 'N/record', 'N/format' , 'N/search', 'N/query'], function( e
                        search.createColumn({name: "type", label: "Type"}),
                        search.createColumn({name: "tranid", label: "Document Number"}),
                        search.createColumn({name: "statusref", label: "Status"}),
+                       search.createColumn({name:"trandate",label:"trandate"}),
                        search.createColumn({
                           name: "companyname",
                           join: "customer",
@@ -62,7 +63,10 @@ define( ['N/error', 'N/record', 'N/format' , 'N/search', 'N/query'], function( e
                           name: "custrecord_apoyo_ventas",
                           join: "CUSTBODYZONA",
                           label: "Apoyo de ventas"
-                       })
+                       }),
+                       search.createColumn({name: "quantity", label: "Quantity"}),
+                       search.createColumn({name: "quantitycommitted", label: "Quantity Committed"}),
+                       search.createColumn({name: "custbody_tipo_pedido",label:"custbody_tipo_pedido"})
                     ]
                  });
                 var contar = transactionSearchObj.runPaged().count;
@@ -76,10 +80,13 @@ define( ['N/error', 'N/record', 'N/format' , 'N/search', 'N/query'], function( e
                 var pagina = resultados.fetch({ index: pageRange.index });
                 pagina.data.forEach(function(r) {
                     k++
+                  //  var mydate = new Date(r.getValue({name:'trandate'}));
+                    //log.error('fecha',mydate);
+                    var fecha=formatNSDate( r.getValue({name:'trandate'}));
                 json.push({
                       //  "articulo": r.getValue({name:"Item"}),
                         "internalid": r.getValue({name:'internalid'}),
-                        "type": r.getValue({name:'type'}),
+                        "type": r.getText({name:'custbody_tipo_pedido'}),
                         "tranid": r.getValue({name:'tranid'}),                      
                         "statusText": r.getText({name: 'statusref'}),
                         "companyname": r.getValue({name:'companyname',join:'customer'}),
@@ -89,7 +96,11 @@ define( ['N/error', 'N/record', 'N/format' , 'N/search', 'N/query'], function( e
                         "custrecord_representante_vtas": r.getValue({name:'custrecord_representante_vtas',join:'CUSTBODYZONA'}),
                         "custrecord_representante_vtasText": r.getText({name:'custrecord_representante_vtas',join:'CUSTBODYZONA'}),
                         "custrecord_apoyo_ventas": r.getValue({name:'custrecord_apoyo_ventas',join:'CUSTBODYZONA'}),
-                        "custrecord_apoyo_ventasText": r.getText({name:'custrecord_apoyo_ventas',join:'CUSTBODYZONA'})
+                        "custrecord_apoyo_ventasText": r.getText({name:'custrecord_apoyo_ventas',join:'CUSTBODYZONA'}),
+                        "trandate": fecha,
+                        "quantity": r.getValue({name:'quantity'}),
+                        "quantitycommitted": r.getValue({name:'quantitycommitted'}) //r.getValue({name:'trandate'})
+                
 
 
                         
@@ -100,6 +111,21 @@ define( ['N/error', 'N/record', 'N/format' , 'N/search', 'N/query'], function( e
         return  json;
     }
 
+    function addZeros(num,len){
+        var str=num.toString();
+        while(str.length<len){str='0'+str;}
+        return str;
+      }
+      
+      // function to format date object into NetSuite's mm/dd/yyyy format.
+      function formatNSDate(dateObj){
+        if(dateObj){ 
+            var parts =dateObj.split('/');
+            var nsFormatDate=parts[0]+'/'+addZeros(parts[1],2)+'/'+parts[2]; //addZeros(dateObj.getMonth()+1,2)+'/'+addZeros(dateObj.getDate(),2)+'/'+dateObj.getFullYear();
+          return nsFormatDate;
+        }
+        return null;
+      }
 
     handler.post = function( context )
   {
