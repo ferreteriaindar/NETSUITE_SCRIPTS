@@ -82,8 +82,8 @@ define( ['N/error', 'N/record', 'N/format', 'N/search','N/email'], function( err
 		//Se llena arreglo de la lista de articulos del context
 
 	
-		log.error('itemsPosition',itemsPosition);
-		log.error('LineasFulfillMent',LineasFulfillMent);
+		//log.error('itemsPosition',itemsPosition);
+		//log.error('LineasFulfillMent',LineasFulfillMent);
 		var inventoryNumbers = getInventoryNumbers( Object.keys( itemsPosition ) ).item;
 	
 		var lines = context.lines;
@@ -91,28 +91,28 @@ define( ['N/error', 'N/record', 'N/format', 'N/search','N/email'], function( err
 			LineasContext.push({ itemId: lines[i].itemId,quantity:lines[i].quantity,location:lines[i].location,inventorydetail:lines.inventorydetail});
 
 		}
-		log.error('LineasContext',LineasContext);
+		//log.error('LineasContext',LineasContext);
 		for(var i=0;i<LineasFulfillMent.length;i++)
 		{
 			log.error('LineaFulfill',LineasFulfillMent[i].line);
 			itemFulfillMent.selectLine( { sublistId: 'item', line: i } );
 			itemFulfillMent.setCurrentSublistValue( 'item', 'apply', 'T' );
 			var  itemId=itemFulfillMent.getCurrentSublistValue('item','item');
-			log.error('itemActual',itemId);
+		//	log.error('itemActual',itemId);
 			// se recorre  el context por cada linea del fulfillment
 			for(var j=0;j<LineasContext.length;j++)
 			{
 				if(itemId==LineasContext[j].itemId )
 				{
-					log.error('Entra'+itemId,'si');
+				//	log.error('Entra'+itemId,'si');
 					itemFulfillMent.setCurrentSublistValue( { sublistId: 'item', fieldId: 'location', value: LineasContext[j].location } );
 					
 					if(LineasFulfillMent[i].quantity<LineasContext[j].quantity)
 					{
-						log.error('entraResta','si');
+						//log.error('entraResta','si');
 						itemFulfillMent.setCurrentSublistValue( { sublistId: 'item', fieldId: 'quantity', value: LineasFulfillMent[i].quantity } );
 						LineasContext[j].quantity=Number(LineasContext[j].quantity)-Number(LineasFulfillMent[i].quantity);
-						log.error('ContextResultado',LineasContext);
+						//log.error('ContextResultado',LineasContext);
 					}
 					else  
 						{
@@ -127,7 +127,7 @@ define( ['N/error', 'N/record', 'N/format', 'N/search','N/email'], function( err
 								{
 									 LineasContext[j].quantity=0;
 								}
-								log.error('ContextResultado2',LineasContext);	
+							//	log.error('ContextResultado2',LineasContext);	
 						}
 								
 					//TEMA  DE NUMEROS DE SERIE Y LOTE   NO ESTA PROBADO POR QUE NO LO USAMOS EN INDAR
@@ -160,7 +160,7 @@ define( ['N/error', 'N/record', 'N/format', 'N/search','N/email'], function( err
 			//PROCESO PARA CERRAR NO LO SURTIDO
 			
 		}
-		log.error('contextFinal',LineasContext);
+		//log.error('contextFinal',LineasContext);
 		for ( var i = 0; i < itemFulfillMent.getLineCount( 'item' ); i ++ ) 
 			{
 				var bandera=0
@@ -458,8 +458,8 @@ define( ['N/error', 'N/record', 'N/format', 'N/search','N/email'], function( err
       myvar=myvar+'</ul>';
 
      var recipients=buscarecipients(SaleOrder.getValue('entity'));
-      log.error('rrr',recipients);
-      recipients.push(7); 
+    //  log.error('rrr',recipients);
+    //  recipients.push(7); 
 
       email.send({
               author: 34,
