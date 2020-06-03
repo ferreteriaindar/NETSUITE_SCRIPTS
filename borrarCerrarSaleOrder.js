@@ -30,6 +30,7 @@ define( ['N/log','N/error', 'N/record', 'N/format' , 'N/search', 'N/email'], fun
              
         var SaleOrder = record.load({ type: record.Type.SALES_ORDER, id: context.saleOrderID    });
         var status =SaleOrder.getValue('status');
+        var memo= SaleOrder.getValue('memo');
         log.error('status',status);
         
         
@@ -42,13 +43,15 @@ define( ['N/log','N/error', 'N/record', 'N/format' , 'N/search', 'N/email'], fun
               
                   if(SaleOrder.getSublistValue( { sublistId: 'item', line: i, fieldId: 'quantityfulfilled' } )==0)
                   {
-                      
-                  SaleOrder.setSublistValue({
-                                                  sublistId: 'item',
-                                                  fieldId: 'isclosed',
-                                                  line: i,
-                                                  value: true
-                                              });
+                        log.error('entra en 0','si');
+                        SaleOrder.setSublistValue({sublistId:'item',fieldId:'quantitycommitted',line:i,value:0});
+                    SaleOrder.setSublistValue({
+                                                    sublistId: 'item',
+                                                    fieldId: 'isclosed',
+                                                    line: i,
+                                                    value: true
+                                                });
+                    
                   }
                   if(SaleOrder.getSublistValue( { sublistId: 'item', line: i, fieldId: 'quantityfulfilled' } )<SaleOrder.getSublistValue( { sublistId: 'item', line: i, fieldId: 'quantity' } ))
                   {
@@ -65,7 +68,8 @@ define( ['N/log','N/error', 'N/record', 'N/format' , 'N/search', 'N/email'], fun
                       });
                   }
               }
-             
+             SaleOrder.setValue({fieldId:'memo',value:memo+"Cerrado desde el SAI"});
+             log.error('memo',memo+"Cerrado desde el SAI");
               SaleOrder.save({ ignoreMandatoryFields: true });
               if(SaleOrder.getValue('orderstatus')=='B')
               generaVentaPerdida(SaleOrder,VentaPerdidaLineas);
@@ -126,16 +130,16 @@ define( ['N/log','N/error', 'N/record', 'N/format' , 'N/search', 'N/email'], fun
      {
         
         var myvar = '<h2 style="text-align: center;"><span style="color: #ff0000; background-color: #ffffff;">NOTIFICACIÓN</span></h2>'+
-        '<p>El pedido '+saleOrder.getValue('tranid')+'('+saleOrder.getText('entity')+')  acaba de ser cancelado por  '+context.usuario+' desde el SAI, por favor</p>'+
+        '<p>El pedido '+saleOrder.getValue('tranid')+'('+saleOrder.getText('entity')+')  acaba de ser cancelado por  '+context.usuario+' desde el SAI, por favor</p>'+
         '<p>valida esta informacion con tu apoyo de ventas</p>'+
-        '<p> </p>';
+        '<p> </p>';
 
         if(context.compras==1)
         {
 
             myvar= '<h2 style="text-align: center;"><span style="color: #ff0000; background-color: #ffffff;">NOTIFICACIÓN</span></h2>'+
-            '<p>El pedido  <a href="https://5327814.app.netsuite.com/app/accounting/transactions/transaction.nl?id='+saleOrder.getValue('id')+'">'+saleOrder.getValue('tranid')+'</a> acaba de ser cancelado por  '+context.usuario+' desde el SAI,se te notifica por que este pedido tiene   articulos de Sobre Pedido  s/pedido.</p>'+
-            '<p> </p>';
+            '<p>El pedido  <a href="https://5327814.app.netsuite.com/app/accounting/transactions/transaction.nl?id='+saleOrder.getValue('id')+'">'+saleOrder.getValue('tranid')+'</a> acaba de ser cancelado por  '+context.usuario+' desde el SAI,se te notifica por que este pedido tiene   articulos de Sobre Pedido  s/pedido.</p>'+
+            '<p> </p>';
                 
             
         }
