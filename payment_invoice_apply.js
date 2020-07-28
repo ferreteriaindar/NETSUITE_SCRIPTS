@@ -92,7 +92,7 @@ define( ['N/error', 'N/record', 'N/format' , 'N/search', 'N/query'], function( e
                       }),
                       search.createColumn({name: "custbody_paqueteria", label: "Paqueteria"}),
                       search.createColumn({name: "internalid", label: "Internal ID"}),
-                      search.createColumn({name: "custbody_cfdi_metpago_sat", label: "Método de Pago (SAT)"})
+                      search.createColumn({name: "custbody_fe_metodo_de_pago", label: "Método de Pago (SAT)"})
                    ]
                 });
                var contar = transactionSearchObj.runPaged().count;
@@ -131,7 +131,7 @@ define( ['N/error', 'N/record', 'N/format' , 'N/search', 'N/query'], function( e
                        "A_pagar": 0, // r.getValue({name:'formulanumeric_2',label:'A_pagar'}),
                        "custbody_paqueteria": r.getText({name:'custbody_paqueteria'}),
                        "internalId": r.getValue({name:'internalid'}),
-                       "metodoPago": r.getText({name:'custbody_cfdi_metpago_sat'})
+                       "metodoPago": r.getValue({name:'custbody_fe_metodo_de_pago'})
 
 
 
@@ -223,7 +223,7 @@ define( ['N/error', 'N/record', 'N/format' , 'N/search', 'N/query'], function( e
                     }),
                     search.createColumn({name: "custbody_paqueteria", label: "Paqueteria"}),
                     search.createColumn({name: "internalid", label: "Internal ID"}),
-                    search.createColumn({name: "custbody_cfdi_metpago_sat", label: "Método de Pago (SAT)"})
+                    search.createColumn({name: "custbody_fe_metodo_de_pago", label: "Método de Pago (SAT)"})
                  ]
                 });
 
@@ -262,7 +262,8 @@ define( ['N/error', 'N/record', 'N/format' , 'N/search', 'N/query'], function( e
                           "A_pagar": r.getValue({name:'formulanumeric_2',label:'A_pagar'}),
                           "custbody_paqueteria": r.getText({name:'custbody_paqueteria'}),
                           "internalId": r.getValue({name:'internalid'}),
-                          "metodoPago": r.getText({name:'custbody_cfdi_metpago_sat'})
+                     //  "metodoPago": r.getText({name:'custbody_fe_metodo_de_pago'})
+                     "metodoPago": r.getText({name:'custbody_fe_metodo_de_pago'})
   
   
   

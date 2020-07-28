@@ -83,7 +83,8 @@
                         TipoPedido:Number( nuevo.getValue({fieldId:'custbody_tipo_pedido'})),
                         ClienteContado: Number( nuevo.getValue({fieldId:'custbody_tipo_pedido'})),
                         RFC: nuevo.getValue({fieldId:'custbody_rfc'}),
-                        UUID: nuevo.getValue({fieldId:'custbody_uuid'}),
+                       // UUID: nuevo.getValue({fieldId:'custbody_uuid'}),
+                       UUID: nuevo.getValue({fieldId:'custbody_fe_uuid_cfdi_33'}),
                         OrdenCompra: nuevo.getValue({fieldId:'custbody_orden_compra'}),
                         Usuario: nuevo.getValue({fieldId:'custbody_inter'}),
                         createdfrom:Number( nuevo.getValue({fieldId:'createdfrom'})),
@@ -122,8 +123,10 @@
 
     function iguales(viejo,nuevo)
     {
-        var UUIDNuevo= nuevo.getValue({fieldId : 'custbody_uuid'});
-            var UUIDviejo=viejo.getValue({fieldId : 'custbody_uuid'});
+      //  var UUIDNuevo= nuevo.getValue({fieldId : 'custbody_uuid'});
+       //     var UUIDviejo=viejo.getValue({fieldId : 'custbody_uuid'});
+         var UUIDNuevo= nuevo.getValue({fieldId : 'custbody_fe_uuid_cfdi_33'});
+            var UUIDviejo=viejo.getValue({fieldId : 'custbody_fe_uuid_cfdi_33'});
             if(UUIDviejo==UUIDNuevo)
             return true;
             else return false;

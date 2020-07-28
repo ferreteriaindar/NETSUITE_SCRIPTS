@@ -51,7 +51,7 @@ function( httpService, error, log, runtime, file, record ) {
                    pricelevel     : currentRecord.getSublistValue( { sublistId: 'price1', line: i, fieldId: 'pricelevel' } ),
                    pricelevelname : obtieneNombre(i),
                    discount       : currentRecord.getSublistValue( { sublistId: 'price1', line: i, fieldId: 'discount' } ),
-                  
+
                 } );
             } 
 
@@ -86,7 +86,7 @@ function( httpService, error, log, runtime, file, record ) {
                    quantityavailablebase : currentRecord.getSublistValue( { sublistId: 'locations', line: i, fieldId: 'quantityavailablebase' } ),
                 });
             }
-            log.error('fecha',currentRecord.getValue({fieldId:'custitem_zindar_fecha_alta'}));
+
             valoresArticulos = {
 
                             baserecordtype                    : currentRecord.getValue( { fieldId : 'baserecordtype' } ),
@@ -94,7 +94,7 @@ function( httpService, error, log, runtime, file, record ) {
                             custitem_nso_indr_sales_min_price : currentRecord.getValue( { fieldId : 'custitem_nso_indr_sales_min_price' } ),
                             minimumquantity                   : currentRecord.getValue( { fieldId : 'minimumquantity' } ),
                             maximumquantity                   : currentRecord.getValue( { fieldId : 'maximumquantity' } ),
-                            custitem_clave_prod_serv          : currentRecord.getValue( { fieldId : 'custitem_clave_prod_serv' } ),
+                            custitem_clave_prod_serv          : currentRecord.getValue( { fieldId : 'custitem_prod_serv_fe_33' } ),
                             custitem_presentacion_individual  : currentRecord.getValue( { fieldId : 'custitem_presentacion_individual' } ),
                             custitem_presentacion_inner       : currentRecord.getValue( { fieldId : 'custitem_presentacion_inner' } ),
                             custitem_presentacion_semimaster  : currentRecord.getValue( { fieldId : 'custitem_presentacion_semimaster' } ),
@@ -226,7 +226,7 @@ function( httpService, error, log, runtime, file, record ) {
                             fechaALta                         : currentRecord.getValue({fieldId:'createddate'}),
                             moneda                            : currentRecord.getValue({fieldId:'custitem2'}),
                             fechaAltaIndar                     : currentRecord.getValue({fieldId:'custitem_zindar_fecha_alta'}),
-                            
+                            balas                               : currentRecord.getValue({fieldId:'custitem_zindar_balas'})
 
                           
 
@@ -235,6 +235,8 @@ function( httpService, error, log, runtime, file, record ) {
                       
             valoresArticulos.lineInfo = { locations : lineasLocations, vendors : lineasItemVendor, price: price1Lineas };
             valoresArticulos          = JSON.stringify( valoresArticulos );
+        //  generaArchivo( valoresArticulos, currentRecord.getValue( { fieldId : 'itemid' } ) );
+ 
            
 
         }  catch ( ex ){
@@ -247,6 +249,7 @@ function( httpService, error, log, runtime, file, record ) {
 
             //var fileObj = file.load( { id: archivo } );
           //  indr_sftp.upLoad( fileObj, currentRecord.getValue( { fieldId : 'itemid' } ) +'.json', 'ITEM' );
+
           httpService.post('api/Item/Insert', valoresArticulos ); 
             currentRecord.setValue( { fieldId : 'custitem_nso_intgrcn_sncrnzd', value : true } );
 

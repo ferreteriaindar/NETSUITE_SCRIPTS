@@ -69,7 +69,8 @@ define(['SuiteScripts/INDAR SCRIPTS/httpService','N/sftp', 'N/search', 'N/error'
                    // ClienteContado: Number( currentRecord.getValue({fieldId:'custbody_tipo_pedido'})),
                    ClienteContado:  currentRecord.getValue({fieldId:'custbody_cte_contado'})=='Crédito'?0:1,
                     RFC: currentRecord.getValue({fieldId:'custbody_rfc'}),
-                    UUID: currentRecord.getValue({fieldId:'custbody_uuid'}),
+                   // UUID: currentRecord.getValue({fieldId:'custbody_uuid'}),
+                     UUID: currentRecord.getValue({fieldId:'custbody_fe_uuid_cfdi_33'}),
                     OrdenCompra: currentRecord.getValue({fieldId:'custbody_orden_compra'}),
                     Usuario: currentRecord.getValue({fieldId:'custbody_inter'}),
                     createdfrom:Number( currentRecord.getValue({fieldId:'createdfrom'})),
@@ -91,8 +92,8 @@ define(['SuiteScripts/INDAR SCRIPTS/httpService','N/sftp', 'N/search', 'N/error'
                     custbody_cfdi_formadepago: currentRecord.getText({fieldId:'custbody_cfdi_formadepago'}),
                     custbody_uso_cfdi: currentRecord.getText({fieldId:'custbody_uso_cfdi'}),
                     currencysymbol: currentRecord.getText({fieldId:'currencysymbol'}),
-                    cfdiComentario: currentRecord.getValue({fieldId:'custbody_nso_cfdi_comentario'}),
-                    responseCfdi: currentRecord.getValue({fieldId:'custbody_nso_cfdc_response_mysuite'})
+                    cfdiComentario: currentRecord.getValue({fieldId:'custbody_fe_sf_codigo_respuesta'}),
+                    responseCfdi: currentRecord.getValue({fieldId:'custbody_fe_sf_mensaje_respuesta'})
                 };
                 valoresFactura.lineItems= { item:lineas };
                 valoresFactura = JSON.stringify(valoresFactura)
