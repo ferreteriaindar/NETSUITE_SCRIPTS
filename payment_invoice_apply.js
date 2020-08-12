@@ -19,7 +19,7 @@ define( ['N/error', 'N/record', 'N/format' , 'N/search', 'N/query'], function( e
                    type: "invoice",
                    filters:
                    [
-                       ["type","anyof","CustInvc","CustCred"], 
+                       ["type","anyof","CustInvc"], 
                       "AND", 
                       ["mainline","is","T"], 
                       "AND", 
@@ -62,7 +62,7 @@ define( ['N/error', 'N/record', 'N/format' , 'N/search', 'N/query'], function( e
                       search.createColumn({name: "type", label: "Documento"}),
                       search.createColumn({name: "tranid", label: "NumDoc"}),
                       search.createColumn({name: "memo", label: "Nota"}),
-                      search.createColumn({name: "createdfrom", label: "Origen"}),
+                     // search.createColumn({name: "createdfrom", label: "Origen"}),
                       search.createColumn({name: "trandate", label: "Fecha"}),
                       search.createColumn({name: "custbody_nso_indr_receipt_date", label: "FechaRecibo"}),
                       search.createColumn({name: "duedate", label: "FechaVencimiento"}),
@@ -90,9 +90,12 @@ define( ['N/error', 'N/record', 'N/format' , 'N/search', 'N/query'], function( e
                          formula: "{custbody_nso_indr_client_discount}/100*{amount}-{amount}",
                          label: "A_pagar"
                       }),
-                      search.createColumn({name: "custbody_paqueteria", label: "Paqueteria"}),
+                     // search.createColumn({name: "custbody_paqueteria", label: "Paqueteria"}),
                       search.createColumn({name: "internalid", label: "Internal ID"}),
-                      search.createColumn({name: "custbody_fe_metodo_de_pago", label: "Método de Pago (SAT)"})
+                      search.createColumn({name: "custbody_fe_metodo_de_pago", label: "Método de Pago (SAT)"}),
+                      search.createColumn({name:"custbody_nso_indr_discount_16p",label:"discount16"}),
+                      search.createColumn({name:"custbody_nso_indr_zero_tax_discount",label:"discount0"})
+                      
                    ]
                 });
                var contar = transactionSearchObj.runPaged().count;
@@ -117,10 +120,10 @@ define( ['N/error', 'N/record', 'N/format' , 'N/search', 'N/query'], function( e
                        "Documento":  r.getValue({name:"type"}),
                        "NumDoc": r.getValue({name:"tranid"}),
                        "Nota": r.getValue({name:"memo"}),
-                       "Origen": r.getValue({name:"createdfrom"}),
+                       "Origen":'',// r.getValue({name:"createdfrom"}),
                        "Fecha": r.getValue({name:"trandate"}),
                        "FechaRecibo": r.getValue({name:"custbody_nso_indr_receipt_date"}),
-                       "FechaVencimiento": r.getValue({name:"duedate"}),
+                       "FechaVencimiento":r.getValue({name:"custbody_nso_indr_discount_date"}), // r.getValue({name:"duedate"}),
                        "Terminos": r.getText({name:"custbody_nso_payment_terms"}),
                        "DescuentoCliente": r.getValue({name:"custbody_nso_indr_client_discount"}),
                        "Vencimiento": r.getValue({name:'formulanumeric'}),
@@ -129,14 +132,11 @@ define( ['N/error', 'N/record', 'N/format' , 'N/search', 'N/query'], function( e
                        "Porcentaje":r.getValue({name:'formulanumeric_3'}),
                        "DescuentoTotal": r.getValue({name:'formulanumeric_1'}),
                        "A_pagar": 0, // r.getValue({name:'formulanumeric_2',label:'A_pagar'}),
-                       "custbody_paqueteria": r.getText({name:'custbody_paqueteria'}),
+                       "custbody_paqueteria":'',// r.getText({name:'custbody_paqueteria'}),
                        "internalId": r.getValue({name:'internalid'}),
-                       "metodoPago": r.getValue({name:'custbody_fe_metodo_de_pago'})
-
-
-
-
-
+                       "metodoPago": r.getValue({name:'custbody_fe_metodo_de_pago'}),
+                       "discount6": r.getValue({name:'custbody_nso_indr_discount_16p'})==''?0:r.getValue({name:'custbody_nso_indr_discount_16p'}),
+                       "discount10": r.getValue({name:'custbody_nso_indr_zero_tax_discount'})==''?0:r.getValue({name:'custbody_nso_indr_zero_tax_discount'})
 
                });
            });
@@ -154,7 +154,7 @@ define( ['N/error', 'N/record', 'N/format' , 'N/search', 'N/query'], function( e
                       "AND", 
                       ["mainline","is","F"], 
                       "AND", 
-                      ["amountremaining","greaterthan","0.00"], 
+                      ["amountremaining","greaterthan","3.0"], 
                       "AND", 
                       ["custbodyzona","anyof",[id]]
                    ],
@@ -193,7 +193,7 @@ define( ['N/error', 'N/record', 'N/format' , 'N/search', 'N/query'], function( e
                       search.createColumn({name: "type", label: "Documento"}),
                       search.createColumn({name: "tranid", label: "NumDoc"}),
                       search.createColumn({name: "memo", label: "Nota"}),
-                      search.createColumn({name: "createdfrom", label: "Origen"}),
+                     // search.createColumn({name: "createdfrom", label: "Origen"}),
                       search.createColumn({name: "trandate", label: "Fecha"}),
                       search.createColumn({name: "custbody_nso_indr_receipt_date", label: "FechaRecibo"}),
                       search.createColumn({name: "duedate", label: "FechaVencimiento"}),
@@ -221,9 +221,11 @@ define( ['N/error', 'N/record', 'N/format' , 'N/search', 'N/query'], function( e
                        formula: "{custbody_nso_indr_client_discount}/100*{amount}-{amount}",
                        label: "A_pagar"
                     }),
-                    search.createColumn({name: "custbody_paqueteria", label: "Paqueteria"}),
+                 //   search.createColumn({name: "custbody_paqueteria", label: "Paqueteria"}),
                     search.createColumn({name: "internalid", label: "Internal ID"}),
-                    search.createColumn({name: "custbody_fe_metodo_de_pago", label: "Método de Pago (SAT)"})
+                    search.createColumn({name: "custbody_fe_metodo_de_pago", label: "Método de Pago (SAT)"}),
+                  //  search.createColumn({name:"custbody_nso_indr_discount_16p",label:"discount16"}),
+                   // search.createColumn({name:"custbody_nso_indr_zero_tax_discount",label:"discount0"})
                  ]
                 });
 
@@ -248,7 +250,7 @@ define( ['N/error', 'N/record', 'N/format' , 'N/search', 'N/query'], function( e
                           "Documento":  r.getValue({name:"type"}),
                           "NumDoc": r.getValue({name:"tranid"}),
                           "Nota": r.getValue({name:"memo"}),
-                          "Origen": r.getValue({name:"createdfrom"}),
+                          "Origen":'',// r.getValue({name:"createdfrom"}),
                           "Fecha": r.getValue({name:"trandate"}),
                           "FechaRecibo": r.getValue({name:"custbody_nso_indr_receipt_date"}),
                           "FechaVencimiento": r.getValue({name:"duedate"}),
@@ -260,10 +262,14 @@ define( ['N/error', 'N/record', 'N/format' , 'N/search', 'N/query'], function( e
                           "Porcentaje":r.getValue({name:'formulanumeric_3'}),
                           "DescuentoTotal": r.getValue({name:'formulanumeric_1'}),
                           "A_pagar": r.getValue({name:'formulanumeric_2',label:'A_pagar'}),
-                          "custbody_paqueteria": r.getText({name:'custbody_paqueteria'}),
+                          "custbody_paqueteria":'',// r.getText({name:'custbody_paqueteria'}),
                           "internalId": r.getValue({name:'internalid'}),
                      //  "metodoPago": r.getText({name:'custbody_fe_metodo_de_pago'})
-                     "metodoPago": r.getText({name:'custbody_fe_metodo_de_pago'})
+                     "metodoPago": r.getText({name:'custbody_fe_metodo_de_pago'})/*,
+                     "discount6":0, //r.getValue({name:'custbody_nso_indr_discount_16p'}),
+                     "discount10":0// r.getValue({name:'custbody_nso_indr_zero_tax_discount'})
+                     */
+                     
   
   
   
