@@ -76,7 +76,7 @@ define( ['N/error', 'N/record', 'N/format' , 'N/search', 'N/query'], function( e
                        "zona": r.getText({name:'custrecord_zonas_clientes',join:'CUSTBODYZONA'}),
                        "mensaje":r.getValue({name:'custbody_fe_sf_mensaje_respuesta'}) ,
                        "type":r.getText({name:'type'}),
-                       "customer":r.getText({name:'entity'})             
+                       "customer":r.getText({name:'entity'})           
 
                });
            });
@@ -148,10 +148,9 @@ define( ['N/error', 'N/record', 'N/format' , 'N/search', 'N/query'], function( e
                        "customer":r.getText({name:'entity'})      
  
  
- 
                  });
              });
- 
+             
              
  
  
@@ -162,14 +161,131 @@ define( ['N/error', 'N/record', 'N/format' , 'N/search', 'N/query'], function( e
    }
 
 
+
+   function busquedaNotas(cliente)
+   {
+      var json=[];
+      var transactionSearchObj=search.create({
+         type: "creditmemo",
+         filters:
+         [
+            ["type","anyof","CustCred"], 
+            "AND", 
+            ["mainline","is","T"], 
+            "AND", 
+            ["status","anyof","CustCred:A"], 
+            "AND", 
+            ["customer.entityid","haskeywords",cliente]
+         ],
+         columns:
+         [
+            search.createColumn({name: "internalid", label: "Internal ID"}),
+            search.createColumn({name: "tranid", label: "Document Number"}),
+            search.createColumn({name: "entity", label: "Name"}),
+            search.createColumn({name: "amountremaining", label: "Amount Remaining"}),
+            search.createColumn({name: "datecreated", label: "Date Created"}),
+            search.createColumn({name: "memo", label: "Memo"}),
+            search.createColumn({name:"type",label:"type"}),
+            search.createColumn({name:"custbody_fe_metodo_de_pago",label:"custbody_fe_metodo_de_pago"}),
+            search.createColumn({name:"custbody_cfdi_tipo_relacion_33",label:"custbody_cfdi_tipo_relacion_33"}),
+            search.createColumn({name: "amount", label: "amount"}),
+         ]
+      });
+      var contar = transactionSearchObj.runPaged().count;
+      var resultados=  transactionSearchObj.runPaged({
+         pageSize: 1000
+       });
+               
+               var k = 0;
+               resultados.pageRanges.forEach(function(pageRange) {
+                  var pagina = resultados.fetch({ index: pageRange.index });
+                  pagina.data.forEach(function(r) {
+                     k++
+                  json.push({
+                     "type":r.getText({name:'type'}),
+                        "internalid":Number( r.getValue({name:'internalid'})),
+                        "tranid": r.getValue({name:'tranid'}),
+                        "entity": r.getText({name:'entity'}),
+                        "amountremaining":Number( r.getValue({name:'amountremaining'})),
+                        "datecreated":r.getValue({name:'datecreated'}),
+                        "memo":r.getValue({name:'memo'}),
+                        "formaPago": r.getValue({name:'custbody_fe_metodo_de_pago'}),
+                        "tipoRelacion":r.getValue({name:'custbody_cfdi_tipo_relacion_33'}),
+                        "amount" :Number( r.getValue({name:'amount'})),              
+
+                  });
+            });
+         });
+
+         var InvoicesSearchObj= search.create({
+            type: "invoice",
+            filters:
+            [
+               ["type","anyof","CustInvc"], 
+               "AND", 
+               ["mainline","is","T"], 
+               "AND", 
+               ["status","anyof","CustInvc:A"], 
+               "AND", 
+               ["customer.entityid","haskeywords",cliente]
+            ],
+            columns:
+            [
+               search.createColumn({name: "internalid", label: "Internal ID"}),
+               search.createColumn({name: "tranid", label: "Document Number"}),
+               search.createColumn({name: "entity", label: "Name"}),
+               search.createColumn({name: "amountremaining", label: "Amount Remaining"}),
+               search.createColumn({name: "datecreated", label: "Date Created"}),
+               search.createColumn({name: "memo", label: "Memo"}),
+               search.createColumn({name:"type",label:"type"}),
+               search.createColumn({name: "amount", label: "amount"}),
+            ]
+         });
+
+         var contarInvoices = InvoicesSearchObj.runPaged().count;
+         var resultadosInvoices=  InvoicesSearchObj.runPaged({
+            pageSize: 1000
+          });
+
+
+          var k = 0;
+          resultadosInvoices.pageRanges.forEach(function(pageRange) {
+             var paginaInvoices = resultadosInvoices.fetch({ index: pageRange.index });
+             paginaInvoices.data.forEach(function(r) {
+                k++
+             json.push({
+               "type":r.getText({name:'type'}),
+                   "internalid":Number( r.getValue({name:'internalid'})),
+                   "tranid": r.getValue({name:'tranid'}),
+                   "entity": r.getText({name:'entity'}),
+                   "amountremaining":Number( r.getValue({name:'amountremaining'})),
+                   "datecreated":r.getValue({name:'datecreated'}),
+                   "memo":r.getValue({name:'memo'}),
+                   "amount" :Number( r.getValue({name:'amount'})),              
+
+             });
+       });
+    });
+    return json;
+
+   }
+
+
    handler.get = function( context )
  {
    try
    {
-       var transfers = busqueda(context.zonaid);
-
-       return { 'responseStructure': { 'codeStatus': 'OK', 'descriptionStatus': 'Datos obtenidos con éxito' }, 'Resultados': { 'CustomerID': 22, 'Documentos': transfers }};
+      if(context.zonaid)
+       {
+          var transfers = busqueda(context.zonaid);
+         return { 'responseStructure': { 'codeStatus': 'OK', 'descriptionStatus': 'Datos obtenidos con éxito' }, 'Resultados': { 'CustomerID': 22, 'Documentos': transfers }};
     // return {'Documentos':arqueo};
+       }
+       else  
+        {
+            var Notas= busquedaNotas(context.cliente)
+            return { 'responseStructure': { 'codeStatus': 'OK', 'descriptionStatus': 'NOTAS DE CREDITO' }, 'Resultados': { 'CustomerID': 22, 'Documentos': Notas }};
+         }
 
    }   catch ( e ) {
        log.debug( 'GET', JSON.stringify( e ) );
