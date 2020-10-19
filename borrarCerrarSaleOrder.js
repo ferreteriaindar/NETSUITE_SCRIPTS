@@ -4,7 +4,7 @@
  *@Autor ROBERTO VELASCO LARIOS
  *@Company INIDAR PERRROS
  *@NModuleScope Public
-  *@Description Script encargado de  aplicar  facturas a un pago
+  *@Description Script encargado de  cerrar el pedido,o una linea de un pedido
  */
 
 define( ['N/log','N/error', 'N/record', 'N/format' , 'N/search', 'N/email'], function( log,error, record, format, search, email ) {
@@ -143,9 +143,29 @@ define( ['N/log','N/error', 'N/record', 'N/format' , 'N/search', 'N/email'], fun
                 
             
         }
+        ///2  si es que compras   cierra una linea de un  pedidop
+        if(context.compras==2)
+        {
+            var myvar = '<h3 style="text-align: center;"><span style="background-color: #ff9900; color: #ffffff;">AVISO</span></h3>'+
+            '<p style="text-align: left;">Este correo es para avisarte  que algunas partidas  del pedido <strong> '+saleOrder.getValue('tranid')+' </strong> del cliente <strong>'+saleOrder.getText('entity')+' </strong>  fueron canceladas. En caso de que el pedido tenga otras partidas seguirá su proceso normal . Según creas conveniente, avisa a tu cliente. Este correo es informativo, favor de no contestarlo. </p>'+
+            '<p style="text-align: left;"></p>'+
+            '<ul>'+
+            '';
+            log.error('LINEAS',context.lines.length);
+            var lineas= context.lines;
+            for (var i = 0; i < lineas.length; i++) {
+            myvar=myvar+'  <li><strong>'+lineas[i].item+' '+lineas[i].quantity+ 'pza(s)</strong> </li>'
+             
+            };
+            myvar=myvar+'</ul>';
+
+        }
         var recipients= [context.apoyo,context.vendedor];
         if(context.compras==1)
         recipients.push( 16 );
+        if(context.compras==2)
+        recipients.push(7);
+
         
         log.error('destinataros',recipients);
                     
@@ -153,9 +173,78 @@ define( ['N/log','N/error', 'N/record', 'N/format' , 'N/search', 'N/email'], fun
             author: 34,
             recipients: recipients,
             subject: 'Pedido '+saleOrder.getValue('tranid')+' a sido cancelado',
-            body: myvar,
-            
+            body: myvar
             });
      };
+
+
+
+     handler.put = function( context )
+     {
+        cerrarLineasSaleOrder(context);
+        return { 'responseStructure': { 'codeStatus': 'OK', 'descriptionStatus': 'OK' }, 'internalId': 0};
+     }
+
+
+     function cerrarLineasSaleOrder(context)
+     {
+        try
+        {
+             
+        var SaleOrder = record.load({ type: record.Type.SALES_ORDER, id: context.saleOrderID    });
+        var status =SaleOrder.getValue('status');
+        var memo= SaleOrder.getValue('memo');
+        log.error('status',status);
+
+        var lineas=context.lines;
+        if(SaleOrder.getValue('orderstatus')=='A' ||SaleOrder.getValue('orderstatus')=='B')
+          {
+            var VentaPerdidaLineas= [];
+            log.error('LINEAS',SaleOrder.getLineCount({sublistId: 'item'}));
+            for (var i = 0; i < SaleOrder.getLineCount({sublistId: 'item'}); i++) {
+            
+                for (var j=0; j<lineas.length;j++)
+                {
+                    if(SaleOrder.getSublistValue( { sublistId: 'item', line: i, fieldId: 'item' } )==lineas[j].itemid)
+                    {
+                        log.error('encuentra',lineas[j].itemid);
+
+                        VentaPerdidaLineas.push( {
+                            articulo:  SaleOrder.getSublistValue({ sublistId: 'item', line: i, fieldId: 'item' }),
+                           cantidad:  (SaleOrder.getSublistValue( { sublistId: 'item', line: i, fieldId: 'quantity' } )-SaleOrder.getSublistValue( { sublistId: 'item', line: i, fieldId: 'quantityfulfilled' } ))
+                            });
+                        SaleOrder.setSublistValue({sublistId:'item',fieldId:'quantitycommitted',line:i,value:0});
+                        SaleOrder.setSublistValue({
+                                                        sublistId: 'item',
+                                                        fieldId: 'isclosed',
+                                                        line: i,
+                                                        value: true
+                                                    });
+                        
+
+                    }
+                }
+            }
+            SaleOrder.save({ ignoreMandatoryFields: true });
+            generaVentaPerdida(SaleOrder,VentaPerdidaLineas);
+            enviarEmail(SaleOrder,context);
+          }
+          else{
+              log.error("status","No se puedes cerrar ya esta facturado");
+              return { 'responseStructure': { 'codeStatus': 'NOK', 'descriptionStatus': 'Ya esta Facturado y/o Cancelado'}, 'internalId': ''};
+          }
+
+
+
+
+        }catch ( e ) {
+            log.error( 'GET', JSON.stringify( e ) );
+            var errorText = 'ERROR CODE: ' + e.name + ' \n DESCRIPTION: ' + e.message;
+            return { 'responseStructure': { 'codeStatus': 'NOK', 'descriptionStatus': 'Error al obtener datos ' + errorText }, 'internalId': ''};
+    
+          }
+
+     }
+
   return handler;
   } );

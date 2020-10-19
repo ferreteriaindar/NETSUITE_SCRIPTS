@@ -343,7 +343,7 @@ define( ['N/error', 'N/record', 'N/format', 'N/search','N/email'], function( err
              
         var SaleOrder = record.load({ type: record.Type.SALES_ORDER, id: saleOrderID    });
   
-          if(SaleOrder.getValue('orderstatus')=='D' ||SaleOrder.getValue('orderstatus')=='D')
+          if(SaleOrder.getValue('orderstatus')=='D' ||SaleOrder.getValue('orderstatus')=='E')
           {
 			  log.error('si entra a cerrar SO','');
               var VentaPerdidaLineas= [];
