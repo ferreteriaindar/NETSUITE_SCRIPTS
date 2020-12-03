@@ -156,7 +156,8 @@ define( ['N/error', 'N/record', 'N/format' , 'N/search', 'N/query'], function( e
                       "AND", 
                       ["amountremaining","greaterthan","3.0"], 
                       "AND", 
-                      ["custbodyzona","anyof",[id]]
+                    //  ["custbodyzona","anyof",[id]]
+                    ["customer.custentity_zona_cliente","anyof",[id]]
                    ],
                    columns:
                    [

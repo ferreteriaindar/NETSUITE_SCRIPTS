@@ -19,18 +19,17 @@ define( ['N/error', 'N/record', 'N/format' , 'N/search', 'N/query','N/log'], fun
                     type: "invoice",
                     filters:
                     [
-                       //   OFERTA RELAMPAGO
-                    /*  ["type","anyof","CustInvc"], 
-                     "AND", 
-                     ["createdfrom.datecreated","within","26/6/2020 9:00 am","26/6/2020 7:00 pm"], 
-                     "AND", 
-                     ["createdfrom.custbody_eventos","anyof","270","271"], 
-                     "AND", 
-                     ["name","noneof","31967","29650","32008","2"], 
-                     "AND", 
-                     ["item","anyof","19325","19326","19776","26970","27659","25442","27258","49807","35499","49806","18080","8617"]
-                      */
-                      
+                       //   FIN DE AÑO
+                       ["type","anyof","CustInvc"], 
+                       "AND", 
+                       ["datecreated","within","yesterday"], 
+                       "AND", 
+                       ["name","noneof","31967","29650","32008","2"], 
+                       "AND", 
+                       ["item","anyof","@NONE@"], 
+                       "AND", 
+                       ["createdfrom.datecreated","after","29/11/2020 11:59 pm"]
+                      /*
                      ["type","anyof","CustInvc"], 
                      "AND", 
                      ["datecreated","within","30/6/2020 12:00 am","30/6/2020 11:59 pm"], 
@@ -40,6 +39,7 @@ define( ['N/error', 'N/record', 'N/format' , 'N/search', 'N/query','N/log'], fun
                      ["name","noneof","31967","29650","32008","2"], 
                      "AND", 
                      ["item","anyof","@NONE@"]
+                     */
                       
                      ],
                     columns:
