@@ -21,8 +21,8 @@ define( ['N/error', 'N/record', 'N/format' , 'N/search', 'N/query','N/log'], fun
                     [
                        //   FIN DE AÑO
                        ["type","anyof","CustInvc"], 
-                       "AND", 
-                       ["datecreated","within","yesterday"], 
+                       "AND",                        
+                       ["datecreated","within","yesterday"],               
                        "AND", 
                        ["name","noneof","31967","29650","32008","2"], 
                        "AND", 
