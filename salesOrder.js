@@ -36,6 +36,10 @@ function( httpService, error, log, runtime, file, record ) {
                         backOrdered: currentRecord.getSublistValue({ sublistId: 'item', line: i, fieldId: 'quantitybackordered' }),
                         listPrice: currentRecord.getSublistValue({ sublistId: 'item', line: i, fieldId: 'price' }),
                         amount: currentRecord.getSublistValue( { sublistId: 'item', line: i, fieldId: 'amount' } ),
+                        rate: currentRecord.getSublistValue({sublistId:'item',line:i,fieldId:'rate'}),
+                        taxrate: currentRecord.getSublistValue({sublistId:'item',line:i,fieldId:'taxrate1'})
+
+
                     });
                 }
                 valoresOv = {
@@ -67,7 +71,8 @@ function( httpService, error, log, runtime, file, record ) {
                     eventDiscount: currentRecord.getValue( { fieldId : 'custbody_descuento_evento' } ),
                   	department: currentRecord.getValue( { fieldId : 'custbody2' } ),
                     zone: currentRecord.getValue( { fieldId : 'custbodyzona' } ),
-                    cotizacion: currentRecord.getValue({fieldId:'custbodycustbody_num_cotizacion'})
+                    cotizacion: currentRecord.getValue({fieldId:'custbodycustbody_num_cotizacion'}),
+                    ordenCompra: CurrentRecord.getValue({ fieldId: 'custbody_orden_compra'  })
 
                 };
                 valoresOv.lineitems = { item: lineas };

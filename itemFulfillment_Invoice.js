@@ -270,6 +270,7 @@ define( ['N/error', 'N/record', 'N/format', 'N/search','N/email'], function( err
             log.debug('discountAmount: ', discAmount.toFixed(4));
             billRecord.setValue('custbody_nso_indr_total_discount',discAmount.toFixed(4));
             billRecord.setValue('custbody_nso_indr_discount_16p',discAmount.toFixed(2));
+            billRecord.setValue('custbody_nso_indr_zero_tax_discount', 0);
              // /*END Disc
 			var idInvoice = billRecord.save({ ignoreMandatoryFields: true });
 			log.debug('idInvoice', idInvoice);
@@ -343,7 +344,7 @@ define( ['N/error', 'N/record', 'N/format', 'N/search','N/email'], function( err
              
         var SaleOrder = record.load({ type: record.Type.SALES_ORDER, id: saleOrderID    });
   
-          if(SaleOrder.getValue('orderstatus')=='D' ||SaleOrder.getValue('orderstatus')=='E')
+          if(SaleOrder.getValue('orderstatus')=='D' ||SaleOrder.getValue('orderstatus')=='D')
           {
 			  log.error('si entra a cerrar SO','');
               var VentaPerdidaLineas= [];
@@ -452,7 +453,7 @@ define( ['N/error', 'N/record', 'N/format', 'N/search','N/email'], function( err
         if(SaleOrder.getSublistText( { sublistId: 'item', line: i, fieldId: 'isclosed' } )=='T')
                   {
                     log.error('entra','si');
-                      myvar=myvar+'  <li><strong>'+SaleOrder.getSublistText({sublistId: 'item', line: i, fieldId: 'item'})+'</strong>      '+SaleOrder.getSublistValue({sublistId: 'item', line: i, fieldId: 'quantity'})+' '+SaleOrder.getSublistText({sublistId: 'item', line: i, fieldId: 'units'})+'</li>'
+                      myvar=myvar+'  <li><strong>'+SaleOrder.getSublistText({sublistId: 'item', line: i, fieldId: 'item'})+'</strong>      '+SaleOrder.getSublistValue({sublistId: 'item', line: i, fieldId: 'quantity'})-SaleOrder.getSublistValue( { sublistId: 'item', line: i, fieldId: 'quantityfulfilled' } )+'  '+SaleOrder.getSublistText({sublistId: 'item', line: i, fieldId: 'units'})+'</li>'
                   }
       };
       myvar=myvar+'</ul>';
@@ -465,7 +466,8 @@ define( ['N/error', 'N/record', 'N/format', 'N/search','N/email'], function( err
               author: 34,
               recipients: recipients,
               subject: "Partida cancelada en WMS - No Responder",
-              body: myvar  
+			  body: myvar  ,
+			  relatedRecords: {transactionId:SaleOrderID}
     		  });
 
 	 };
