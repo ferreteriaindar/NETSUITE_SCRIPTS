@@ -452,13 +452,15 @@ define( ['N/error', 'N/record', 'N/format', 'N/search','N/email'], function( err
         log.error('cerradoText',SaleOrder.getSublistText( { sublistId: 'item', line: i, fieldId: 'isclosed' } ));
         if(SaleOrder.getSublistText( { sublistId: 'item', line: i, fieldId: 'isclosed' } )=='T')
                   {
+					 
                     log.error('entra','si');
-                      myvar=myvar+'  <li><strong>'+SaleOrder.getSublistText({sublistId: 'item', line: i, fieldId: 'item'})+'</strong>      '+SaleOrder.getSublistValue({sublistId: 'item', line: i, fieldId: 'quantity'})-SaleOrder.getSublistValue( { sublistId: 'item', line: i, fieldId: 'quantityfulfilled' } )+'  '+SaleOrder.getSublistText({sublistId: 'item', line: i, fieldId: 'units'})+'</li>'
+                      myvar=myvar+'  <li><strong>'+SaleOrder.getSublistText({sublistId: 'item', line: i, fieldId: 'item'})+'</strong>      '+(SaleOrder.getSublistValue({sublistId: 'item', line: i, fieldId: 'quantity'})-SaleOrder.getSublistValue( { sublistId: 'item', line: i, fieldId: 'quantityfulfilled' } ))+'  '+SaleOrder.getSublistText({sublistId: 'item', line: i, fieldId: 'units'})+'</li>'
                   }
       };
       myvar=myvar+'</ul>';
 
-     var recipients=buscarecipients(SaleOrder.getValue('entity'));
+	 var recipients=buscarecipients(SaleOrder.getValue('entity'));
+	
     //  log.error('rrr',recipients);
     //  recipients.push(7); 
 
@@ -467,7 +469,7 @@ define( ['N/error', 'N/record', 'N/format', 'N/search','N/email'], function( err
               recipients: recipients,
               subject: "Partida cancelada en WMS - No Responder",
 			  body: myvar  ,
-			  relatedRecords: {transactionId:SaleOrderID}
+			  relatedRecords: {transactionId:SaleOrder.id}
     		  });
 
 	 };

@@ -2,7 +2,7 @@
  *@NApiVersion 2.x
  *@NScriptType Restlet
  *@Autor ROBERTO VELASCO LARIOS
- *@Company INIDAR PERRROS
+ *@Company INDAR PERRROS
  *@NModuleScope Public
   *@Description Script encargado de  generar el BILL de las facturas de distribucion
  */
