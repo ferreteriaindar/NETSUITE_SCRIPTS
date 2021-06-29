@@ -6,7 +6,7 @@
  *@NModuleScope Public
  */
 
-define( ['N/error', 'N/record', 'N/format', 'N/search','N/email'], function( error, record, format, search,email ) {
+ define( ['N/error', 'N/record', 'N/format', 'N/search','N/email'], function( error, record, format, search,email ) {
 	
 	var handler = {};
 	
@@ -94,7 +94,7 @@ define( ['N/error', 'N/record', 'N/format', 'N/search','N/email'], function( err
 		//log.error('LineasContext',LineasContext);
 		for(var i=0;i<LineasFulfillMent.length;i++)
 		{
-			log.error('LineaFulfill',LineasFulfillMent[i].line);
+		//	log.error('LineaFulfill',LineasFulfillMent[i].line);
 			itemFulfillMent.selectLine( { sublistId: 'item', line: i } );
 			itemFulfillMent.setCurrentSublistValue( 'item', 'apply', 'T' );
 			var  itemId=itemFulfillMent.getCurrentSublistValue('item','item');
@@ -218,9 +218,36 @@ define( ['N/error', 'N/record', 'N/format', 'N/search','N/email'], function( err
 		} */
 		
 	}
+
+
+	function sumaCantidadTotal(lines)
+	{
+				var suma= 0;
+				
+
+				for ( var i = 0; i < lines.length; i ++ ) 
+					{
+						//log.error({title: 'item',details: lines[i].itemId});
+						suma=suma+ Number( lines[i].quantity);
+					}
+					log.error({title: 'suma',details: suma});
+
+						if (suma>0)
+						return true;
+						else return false;
+				
+	}
 	
 	handler.post = function( context ) {
+
+	log.error({
+		title: 'INICIA SCRIPT',
+		details: context.createdfrom.id
+	});
 		try {
+					
+			if(sumaCantidadTotal(context.lines))
+			{
 			log.audit( 'CONTEXT', JSON.stringify( context ) );
 			var itemFulfillMent = record.transform( {
 				fromType: context.createdfrom.recordType,
@@ -272,19 +299,22 @@ define( ['N/error', 'N/record', 'N/format', 'N/search','N/email'], function( err
             billRecord.setValue('custbody_nso_indr_discount_16p',discAmount.toFixed(2));
             billRecord.setValue('custbody_nso_indr_zero_tax_discount', 0);
              // /*END Disc
+			 log.debug('AntesGuardarInvoice', 'ENTRA');
 			var idInvoice = billRecord.save({ ignoreMandatoryFields: true });
+			log.debug('DespuesGuardarInvoice', 'ENTRA');
 			log.debug('idInvoice', idInvoice);
 			log.error('Antes de cerrar SO','');
 			//AQUI   CERRAMOS EL PEDIDO SI ES QUE QUEDÓ PARCIAL Y GENERAMOS VENTAPERDIDA
-			cerrarSaleOrder(context.createdfrom.id);  
+		
+			
          
             } catch ( e ) {
                     log.error( 'POST', JSON.stringify( e ) );
                     var errorText = 'ERROR CODE: ' + e.name + 'DESCRIPTION: ' + e.message;
                     return { 'responseStructure': { 'codeStatus': 'NOK', 'descriptionStatus': 'ERROR AL FACTURAR' + errorText }, 'internalId': 0};
             } 
-
-				
+		}
+			cerrarSaleOrder(context.createdfrom.id);  
 
 
 			return { 'responseStructure': { 'codeStatus': 'OK', 'descriptionStatus': '' }, 'internalId': idInvoice };

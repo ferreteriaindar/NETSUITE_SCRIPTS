@@ -7,13 +7,21 @@
   *@Description Script encargado de obtener Pagos y Facturas para aplicarlas
  */
 
-define( ['N/error', 'N/record', 'N/format' , 'N/search', 'N/query'], function( error, record, format, search, query ) {
+  define( ['N/error', 'N/record', 'N/format' , 'N/search', 'N/query'], function( error, record, format, search, query ) {
 
    var handler = {};
  
    function busqueda(id)
    {           
+				log.error('busquedaInvoice',id);
+            var filtroClienteZona=id.search("C")==-1?"customer.custentity_zona_cliente":"name";
+            var filtroAndAnyOF=filtroClienteZona.search("customer.entityid")==-1?"anyof":"is";
+            log.error({
+               title: 'pARAMETROSFacturas',
+               details: filtroClienteZona+','+filtroAndAnyOF+','+id
+            })
 
+            id=id.search("C")==-1?id:id.substring(1);
                var json=[];
                var transactionSearchObj = search.create({
                    type: "invoice",
@@ -25,7 +33,7 @@ define( ['N/error', 'N/record', 'N/format' , 'N/search', 'N/query'], function( e
                       "AND", 
                       ["amountremaining","greaterthan","0.01"],
                       "AND", 
-                      ["customer.custentity_zona_cliente","anyof",[id]]
+                      [filtroClienteZona,"anyof",[id]]
                    ],
                    columns:
                    [
@@ -65,7 +73,7 @@ define( ['N/error', 'N/record', 'N/format' , 'N/search', 'N/query'], function( e
                      // search.createColumn({name: "createdfrom", label: "Origen"}),
                       search.createColumn({name: "trandate", label: "Fecha"}),
                       search.createColumn({name: "custbody_nso_indr_receipt_date", label: "FechaRecibo"}),
-                      search.createColumn({name: "duedate", label: "FechaVencimiento"}),
+                      search.createColumn({name: "custbody_nso_indr_discount_date", label: "FechaVencimiento"}),
                       search.createColumn({name: "custbody_nso_payment_terms", label: "Terminos"}),
                       search.createColumn({name: "custbody_nso_indr_client_discount", label: "DescuentoCliente"}),
                       search.createColumn({
@@ -146,6 +154,11 @@ define( ['N/error', 'N/record', 'N/format' , 'N/search', 'N/query'], function( e
 
        });
                ///SE GENERA LA BUSQUEDA DE LOS PAGOS Y SE  INSERTAN EN EL MISMO JSON
+                  log.error({
+                     title: 'pARAMETROSPAGOS',
+                     details: filtroClienteZona+','+filtroAndAnyOF+','+id
+                  })
+              
                var customerpaymentSearchObj = search.create({
                    type: "customerpayment",
                    filters:
@@ -155,9 +168,10 @@ define( ['N/error', 'N/record', 'N/format' , 'N/search', 'N/query'], function( e
                       ["mainline","is","F"], 
                       "AND", 
                       ["amountremaining","greaterthan","3.0"], 
-                      "AND", 
+                      "AND",
                     //  ["custbodyzona","anyof",[id]]
-                    ["customer.custentity_zona_cliente","anyof",[id]]
+                  //  ["customer.custentity_zona_cliente","anyof",[id]]
+                  [filtroClienteZona,"anyof",[id]]
                    ],
                    columns:
                    [
@@ -266,10 +280,11 @@ define( ['N/error', 'N/record', 'N/format' , 'N/search', 'N/query'], function( e
                           "custbody_paqueteria":'',// r.getText({name:'custbody_paqueteria'}),
                           "internalId": r.getValue({name:'internalid'}),
                      //  "metodoPago": r.getText({name:'custbody_fe_metodo_de_pago'})
-                     "metodoPago": r.getText({name:'custbody_fe_metodo_de_pago'})/*,
-                     "discount6":0, //r.getValue({name:'custbody_nso_indr_discount_16p'}),
-                     "discount10":0// r.getValue({name:'custbody_nso_indr_zero_tax_discount'})
-                     */
+                     "metodoPago": r.getText({name:'custbody_fe_metodo_de_pago'})
+                     //,
+                   //  "discount6":0, //r.getValue({name:'custbody_nso_indr_discount_16p'}),
+                   //  "discount10":0// r.getValue({name:'custbody_nso_indr_zero_tax_discount'})
+                     
                      
   
   
@@ -277,17 +292,18 @@ define( ['N/error', 'N/record', 'N/format' , 'N/search', 'N/query'], function( e
   
   
                   });
+                  
               });
-  
+
               
   
-  
+ 
           });
 
 
 
 
-
+            
 
        return  json;
    }
@@ -297,7 +313,7 @@ define( ['N/error', 'N/record', 'N/format' , 'N/search', 'N/query'], function( e
  {
    try
    {
-     //  log.error('zona',context.zonaid);
+       log.error('zona',context.zonaid);
        var pagos = busqueda(context.zonaid);
        return { 'responseStructure': { 'codeStatus': 'OK', 'descriptionStatus': 'Datos obtenidos con éxito' }, 'Resultados': { 'CustomerID': 'SINDATO', 'Documentos': pagos }};
 

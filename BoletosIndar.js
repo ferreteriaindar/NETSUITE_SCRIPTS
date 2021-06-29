@@ -21,14 +21,16 @@ define( ['N/error', 'N/record', 'N/format' , 'N/search', 'N/query','N/log'], fun
                     [
                        //   FIN DE AÑO
                        ["type","anyof","CustInvc"], 
-                       "AND",                        
-                       ["datecreated","within","yesterday"],               
-                       "AND", 
-                       ["name","noneof","31967","29650","32008","2"], 
-                       "AND", 
-                       ["item","anyof","@NONE@"], 
-                       "AND", 
-                       ["createdfrom.datecreated","after","29/11/2020 11:59 pm"]
+      "AND", 
+      ["name","noneof","31967","29650","32008","2"], 
+      "AND", 
+      ["item","anyof","@NONE@"], 
+      "AND", 
+      ["custbody_eventos","anyof","222","223","226","228","229","232","235","237","574","575","577","578","579","580","581","582","583","584","585","586","587","588","589","590","591","592","593","594","595","596","597"], 
+      "AND", 
+      ["status","noneof","CustInvc:D","CustInvc:E","CustInvc:V"], 
+      "AND", 
+      ["datecreated","within","26/5/2021 12:00 am","28/5/2021 11:59 pm"]
                       /*
                      ["type","anyof","CustInvc"], 
                      "AND", 
