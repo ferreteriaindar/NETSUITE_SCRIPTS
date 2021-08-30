@@ -7,7 +7,7 @@
   *@Description Script encargado de obtener los pagos sin timbrar
  */
 
-define( ['N/error', 'N/record', 'N/format' , 'N/search', 'N/query'], function( error, record, format, search, query ) {
+  define( ['N/error', 'N/record', 'N/format' , 'N/search', 'N/query'], function( error, record, format, search, query ) {
 
    var handler = {};
  
@@ -189,6 +189,7 @@ define( ['N/error', 'N/record', 'N/format' , 'N/search', 'N/query'], function( e
             search.createColumn({name:"custbody_fe_metodo_de_pago",label:"custbody_fe_metodo_de_pago"}),
             search.createColumn({name:"custbody_cfdi_tipo_relacion_33",label:"custbody_cfdi_tipo_relacion_33"}),
             search.createColumn({name: "amount", label: "amount"}),
+            search.createColumn({name: "custbody_regimen_fiscal_fe_33", label: "regimencontribuyente"}),
          ]
       });
       var contar = transactionSearchObj.runPaged().count;
@@ -211,8 +212,8 @@ define( ['N/error', 'N/record', 'N/format' , 'N/search', 'N/query'], function( e
                         "memo":r.getValue({name:'memo'}),
                         "formaPago": r.getValue({name:'custbody_fe_metodo_de_pago'}),
                         "tipoRelacion":r.getValue({name:'custbody_cfdi_tipo_relacion_33'}),
-                        "amount" :Number( r.getValue({name:'amount'})),              
-
+                        "amount" :Number( r.getValue({name:'amount'})),    
+                        "regimenContribuyente": r.getValue({name:'custbody_regimen_fiscal_fe_33'})
                   });
             });
          });
@@ -239,6 +240,8 @@ define( ['N/error', 'N/record', 'N/format' , 'N/search', 'N/query'], function( e
                search.createColumn({name: "memo", label: "Memo"}),
                search.createColumn({name:"type",label:"type"}),
                search.createColumn({name: "amount", label: "amount"}),
+               search.createColumn({name: "custbody_nso_indr_client_discount", label: "discount"}),
+               search.createColumn({name: "custbody_nso_indr_discount_date", label: "dueDate"}),
             ]
          });
 
@@ -253,6 +256,8 @@ define( ['N/error', 'N/record', 'N/format' , 'N/search', 'N/query'], function( e
              var paginaInvoices = resultadosInvoices.fetch({ index: pageRange.index });
              paginaInvoices.data.forEach(function(r) {
                 k++
+             var disc = r.getValue({name: 'custbody_nso_indr_client_discount'});
+               disc = disc.substring(0, disc.length - 1);
              json.push({
                "type":r.getText({name:'type'}),
                    "internalid":Number( r.getValue({name:'internalid'})),
@@ -261,8 +266,9 @@ define( ['N/error', 'N/record', 'N/format' , 'N/search', 'N/query'], function( e
                    "amountremaining":Number( r.getValue({name:'amountremaining'})),
                    "datecreated":r.getValue({name:'datecreated'}),
                    "memo":r.getValue({name:'memo'}),
-                   "amount" :Number( r.getValue({name:'amount'})),              
-
+                   "amount" :Number( r.getValue({name:'amount'})),
+				   "discount" : Number(disc),
+               	   "duedate": r.getValue({name: 'custbody_nso_indr_discount_date'})
              });
        });
     });
