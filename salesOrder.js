@@ -78,7 +78,8 @@
                        department: currentRecord.getValue( { fieldId : 'custbody2' } ),
                      zone: currentRecord.getValue( { fieldId : 'custbodyzona' } ),
                      cotizacion: currentRecord.getValue({fieldId:'custbodycustbody_num_cotizacion'}),
-                     ordenCompra: currentRecord.getValue({ fieldId: 'custbody_orden_compra'  })
+                     ordenCompra: currentRecord.getValue({ fieldId: 'custbody_orden_compra'  }),
+                     shippingAddress_Text: currentRecord.getValue({ fieldId: 'shippingaddress_text'}).replace(currentRecord.getValue({ fieldId: 'custbody_fe_razon_social'}),'')
  
                  };
                  valoresOv.lineitems = { item: lineas };
