@@ -7,7 +7,7 @@
   *@Description Script encargado de  cerrar el pedido,o una linea de un pedido
  */
 
-define( ['N/log','N/error', 'N/record', 'N/format' , 'N/search', 'N/email'], function( log,error, record, format, search, email ) {
+  define( ['N/log','N/error', 'N/record', 'N/format' , 'N/search', 'N/email'], function( log,error, record, format, search, email ) {
 
     var handler = {};
 
@@ -38,6 +38,7 @@ define( ['N/log','N/error', 'N/record', 'N/format' , 'N/search', 'N/email'], fun
           if(SaleOrder.getValue('orderstatus')=='A' ||SaleOrder.getValue('orderstatus')=='B')
           {
               var VentaPerdidaLineas= [];
+              var VentaVentaNoConcluidaLineas= [];
               log.error('LINEAS',SaleOrder.getLineCount({sublistId: 'item'}));
               for (var i = 0; i < SaleOrder.getLineCount({sublistId: 'item'}); i++) {
               
@@ -67,12 +68,26 @@ define( ['N/log','N/error', 'N/record', 'N/format' , 'N/search', 'N/email'], fun
                           cantidad:  (SaleOrder.getSublistValue( { sublistId: 'item', line: i, fieldId: 'quantity' } )-SaleOrder.getSublistValue( { sublistId: 'item', line: i, fieldId: 'quantityfulfilled' } ))
                       });
                   }
+                  if(SaleOrder.getSublistValue( { sublistId: 'item', line: i, fieldId: 'quantityonhand' } )>0)
+                  {
+                    VentaVentaNoConcluidaLineas.push( {
+                        articulo:  SaleOrder.getSublistValue({ sublistId: 'item', line: i, fieldId: 'item' }),
+                        cantidad:  (SaleOrder.getSublistValue( { sublistId: 'item', line: i, fieldId: 'quantity' } ))
+                    });   
+
+                  }
+
+
+
               }
              SaleOrder.setValue({fieldId:'memo',value:memo+"Cerrado desde el SAI"});
              log.error('memo',memo+"Cerrado desde el SAI");
               SaleOrder.save({ ignoreMandatoryFields: true });
               if(SaleOrder.getValue('orderstatus')=='B')
-              generaVentaPerdida(SaleOrder,VentaPerdidaLineas);
+             { 
+                 generaVentaPerdida(SaleOrder,VentaPerdidaLineas);
+                 generaVentaNoConcluida(SaleOrder,VentaVentaNoConcluidaLineas);
+             }
             
   
               
@@ -93,6 +108,42 @@ define( ['N/log','N/error', 'N/record', 'N/format' , 'N/search', 'N/email'], fun
           }
 
     }
+
+
+    function generaVentaNoConcluida(SaleOrder,lineas)
+    {
+        var ventaNoConcluida = record.create({
+            type: 'customrecord_ventanoconcluida',
+            isDynamic: true
+            });
+            ventaNoConcluida.setValue({fieldId:'custrecord_ventanoconcluida_pedido',value:SaleOrder.getValue('id')});
+            ventaNoConcluida.setValue({fieldId:'name',value:SaleOrder.getValue('tranid').toString()});
+            var hoy = new Date();
+            var receipt_date2 = format.parse( hoy, 'date' );
+            ventaNoConcluida.setValue('custrecord_ventanoconcluida_fecha',receipt_date2);
+            ventaNoConcluida.setValue({fieldId:'custrecord_ventanoconcluida_cliente',value:SaleOrder.getValue('entity')});
+            var idVentaNoConcluida= ventaNoConcluida.save({ignoreMandatoryFields:true});
+            log.debug({
+                title: 'ID_VNC',
+                details: idVentaNoConcluida
+            });
+
+            for (var i = 0; i < lineas.length; i++) {
+                var ventaPerdidaART = record.create({
+                    type: 'customrecord_ventanoconcluida_articulo',
+                    isDynamic: true
+                    }); 
+                    ventaPerdidaART.setValue('custrecord_ventanoconcluida_articulo',lineas[i].articulo);
+                    ventaPerdidaART.setValue('custrecord_ventanoconcluida_cantidad',lineas[i].cantidad);
+                    ventaPerdidaART.setValue('custrecord_ventanoconcluida_head',idVentaNoConcluida);
+                    ventaPerdidaART.save({ignoreMandatoryFields:true});
+                   
+            }
+    }
+
+
+
+
 
      function generaVentaPerdida(saleOrder,lineas)
      {
@@ -163,8 +214,8 @@ define( ['N/log','N/error', 'N/record', 'N/format' , 'N/search', 'N/email'], fun
         var recipients= [context.apoyo,context.vendedor];
         if(context.compras==1)
         recipients.push( 16 );
-        if(context.compras==2)
-        recipients.push(7);
+       /* if(context.compras==2)
+        recipients.push(7);*/
 
         
         log.error('destinataros',recipients);
