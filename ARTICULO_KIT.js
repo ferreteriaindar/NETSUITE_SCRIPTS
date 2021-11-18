@@ -26,14 +26,12 @@
          try {
              var currentRecordAux = context.newRecord;
              var currentRecord    = record.load( { type:currentRecordAux.type,id:currentRecordAux.id } );
-             var valoresArticulos = {};
-             var tamañoItemVendor = currentRecord.getLineCount( { sublistId: 'itemvendor' } );
-             var lineasItemVendor = [];
-             var tamañoLocations  = currentRecord.getLineCount( { sublistId: 'locations' } );
-             var lineasLocations  = [];
+             var valoresArticulos = {};    
+            
              var price1Tamaño     = currentRecord.getLineCount( { sublistId: 'price1' } );
              var price1Lineas     = [];
- 
+             var memberTamaño     = currentRecord.getLineCount( { sublistId: 'member' } );
+             var memberLineas     = [];
            
              for ( var i = 0 ; i < price1Tamaño ; i++) {
  
@@ -51,38 +49,17 @@
  
                  } );
              } 
- 
-             for ( var i = 0 ; i < tamañoItemVendor ; i++) {
- 
-                 lineasItemVendor.push( {
- 
-                    itemvendorprice      : currentRecord.getSublistValue( { sublistId: 'itemvendor', line: i, fieldId: 'itemvendorprice' } ),
-                    preferredvendor      : currentRecord.getSublistValue( { sublistId: 'itemvendor', line: i, fieldId: 'preferredvendor' } ),
-                    purchaseprice        : currentRecord.getSublistValue( { sublistId: 'itemvendor', line: i, fieldId: 'purchaseprice' } ),
-                    subsidiary           : currentRecord.getSublistValue( { sublistId: 'itemvendor', line: i, fieldId: 'subsidiary' } ),
-                    subsidiary_display   : currentRecord.getSublistValue( { sublistId: 'itemvendor', line: i, fieldId: 'subsidiary_display' } ),
-                    sys_id               : currentRecord.getSublistValue( { sublistId: 'itemvendor', line: i, fieldId: 'sys_id' } ),
-                    vendor               : currentRecord.getSublistValue( { sublistId: 'itemvendor', line: i, fieldId: 'vendor' } ),
-                    vendorcurrencyid     : currentRecord.getSublistValue( { sublistId: 'itemvendor', line: i, fieldId: 'vendorcurrencyid' } ),
-                    vendorcurrencyname   : currentRecord.getSublistValue( { sublistId: 'itemvendor', line: i, fieldId: 'vendorcurrencyname' } ),
-                    vendorprices         : currentRecord.getSublistValue( { sublistId: 'itemvendor', line: i, fieldId: 'vendorprices' } ),
-                 });
-             }
- 
-             for ( var i = 0 ; i < tamañoLocations ; i++) {
- 
-                 lineasLocations.push( {
- 
-                    configurationid       : currentRecord.getSublistValue( { sublistId: 'locations', line: i, fieldId: 'configurationid' } ),
-                    lastpurchasepriceperm : currentRecord.getSublistValue( { sublistId: 'locations', line: i, fieldId: 'lastpurchasepriceperm' } ),
-                    lastpurchasepriceurl  : currentRecord.getSublistValue( { sublistId: 'locations', line: i, fieldId: 'lastpurchasepriceurl' } ),
-                    location              : currentRecord.getSublistValue( { sublistId: 'locations', line: i, fieldId: 'location' } ),
-                    location_display      : currentRecord.getSublistValue( { sublistId: 'locations', line: i, fieldId: 'location_display' } ),
-                    locationid            : currentRecord.getSublistValue( { sublistId: 'locations', line: i, fieldId: 'locationid' } ),
-                    quantityavailable     : currentRecord.getSublistValue( { sublistId: 'locations', line: i, fieldId: 'quantityavailable' } ),
-                    quantityavailablebase : currentRecord.getSublistValue( { sublistId: 'locations', line: i, fieldId: 'quantityavailablebase' } ),
-                 });
-             }
+            for (var i=0;i<memberTamaño;i++)
+            {
+                    memberLineas.push({
+                             id          : currentRecord.getSublistValue({sublistId: 'member',fieldId: 'item',line: i }),
+                             memberunit  : currentRecord.getSublistValue({sublistId: 'member',fieldId: 'memberunit',line: i }),
+                             quantity    : currentRecord.getSublistValue({sublistId: 'member',fieldId: 'quantity',line: i }),
+
+                    })
+
+            }
+             
  
              valoresArticulos = {
  
@@ -180,7 +157,7 @@
                              averagecost                       : currentRecord.getValue( { fieldId : 'averagecost' } ),
                              cost                              : currentRecord.getValue( { fieldId : 'cost' } ),
                              lastpurchaseprice                 : currentRecord.getValue( { fieldId : 'lastpurchaseprice' } ),
-                             purchasedescription               : currentRecord.getValue( { fieldId : 'salesdescription' } ),
+                             purchasedescription               : currentRecord.getValue( { fieldId : 'description' } ),
                              stockdescription                  : currentRecord.getValue( { fieldId : 'stockdescription' } ),
                              gainlossaccount                   : currentRecord.getValue( { fieldId : 'gainlossaccount' } ),
                              billpricevarianceacct             : currentRecord.getValue( { fieldId : 'billpricevarianceacct' } ),
@@ -226,15 +203,15 @@
                              balas                               : currentRecord.getValue({fieldId:'custitem_zindar_balas'}),
                            precioControlado                   :currentRecord.getValue({fieldId: 'custitem_nso_indr_controlled_price'}),
                              margenControlado                   :currentRecord.getValue({fieldId: 'custitemcustitem_zindar_plazo_control' }),
-                             margenBajo                         : currentRecord.getValue({ fieldId: 'custitemcustitem_zindar_margen_bajo' })
-
+                             margenBajo                         : currentRecord.getValue({ fieldId: 'custitemcustitem_zindar_margen_bajo' }),
+                            iskit:          true
  
                            
  
  
                          };
                        
-             valoresArticulos.lineInfo = { locations : lineasLocations, vendors : lineasItemVendor, price: price1Lineas };
+             valoresArticulos.lineInfo = {  price: price1Lineas ,member:memberLineas };
              valoresArticulos          = JSON.stringify( valoresArticulos );
            generaArchivo( valoresArticulos, currentRecord.getValue( { fieldId : 'itemid' } ) );
   
@@ -247,11 +224,11 @@
              ///--------------------------- consumir servicio FTP --------------------------//
  
          try {
- 
+                log.error('json',valoresArticulos);
              //var fileObj = file.load( { id: archivo } );
            //  indr_sftp.upLoad( fileObj, currentRecord.getValue( { fieldId : 'itemid' } ) +'.json', 'ITEM' );
          log.error('EnviaIWS','inicia');
-           httpService.post('api/Item/Insert', valoresArticulos ); 
+         //  httpService.post('api/Item/Insert', valoresArticulos ); 
              currentRecord.setValue( { fieldId : 'custitem_nso_intgrcn_sncrnzd', value : true } );
  
  
