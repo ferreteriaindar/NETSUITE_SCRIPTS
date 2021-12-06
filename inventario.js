@@ -63,6 +63,65 @@ define( ['N/error', 'N/record', 'N/format' , 'N/search', 'N/query'], function( e
                 });
             });
         });
+
+
+        //SE AGREGA LA  PARTE DEL INVENTARIO DE LOS KIT
+        var kititemSearchObj = search.create({
+          type: "kititem",
+          filters:
+          [
+             ["type","anyof","Kit"], 
+             "AND", 
+             ["isinactive","is","F"]
+          ],
+          columns:
+          [
+             search.createColumn({
+                name: "itemid",
+                summary: "GROUP",
+                sort: search.Sort.ASC,
+                label: "Name"
+             }),
+             search.createColumn({
+                name: "location",
+                summary: "GROUP",
+                label: "Location"
+             }),
+             search.createColumn({
+                name: "formulanumeric",
+                summary: "MIN",
+                formula: "nvl(({memberitem.quantityavailable}/{memberquantity}),0)",
+                label: "Formula (Numeric)"
+             })
+          ]
+       });
+
+       var contarKit = kititemSearchObj.runPaged().count;
+       //   log.debug("transactionSearchObj result count",searchResultCount);
+        var resultadoskit=  kititemSearchObj.runPaged({
+          pageSize: 1000
+        });
+
+
+        var z = 0;
+        resultadoskit.pageRanges.forEach(function(pageRange) {
+          var paginakit = resultadoskit.fetch({ index: pageRange.index });
+          paginakit.data.forEach(function(r) {
+              z++
+          json.push({
+                //  "articulo": r.getValue({name:"Item"}),
+                  "disponible":r.getValue({name:"formulanumeric",group:"MIN",}),
+                  "nombre": r.getValue({name:"itemid",group:"GROUP"}),
+                  "almacen": "1"
+
+                  
+
+          });
+      });
+  });
+
+
+        /// FIN DE LA PARTE DE INVENTARIO DE LOS KIT
         return  json;
     }
 
