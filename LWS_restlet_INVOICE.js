@@ -6,10 +6,10 @@
 
 //define( [ 'SuiteScripts/sftp/indr_sftp','N/error', 'N/log', 'N/runtime', 'N/file', 'N/record' ],
 
-define(['SuiteScripts/INDAR SCRIPTS/LWS_HTTP_CONNECTION','N/util', 'N/search', 'N/error', 'N/log', 'N/runtime', 'N/file', 'N/record'],
+define(['SuiteScripts/INDAR SCRIPTS/LWS_HTTP_CONNECTION','N/util',  'N/error', 'N/log', 'N/runtime', 'N/file', 'N/record'],
 
     //function( indr_sftp, error, log, runtime, file, record ) {
-    function (httpService,util, search, error, log, runtime, file, record) {
+    function (httpService,util,  error, log, runtime, file, record) {
         function getJsonPoAfterSubmit(context) {
 
             log.debug('context.type: ' + context.UserEventType);
@@ -89,21 +89,22 @@ define(['SuiteScripts/INDAR SCRIPTS/LWS_HTTP_CONNECTION','N/util', 'N/search', '
                     Currency:Number( currentRecord.getValue({fieldId:'currency'})),
                     FechaProntoPago:  currentRecord.getValue({fieldId:'custbody_nso_indr_discount_date'}),
                     AprobacionDescuentos: currentRecord.getValue({fieldId:'custbody_nso_indr_discount_approval'}),
-                    custbody_refpdf: currentRecord.getValue({fieldId: 'custbody_refpdf'}),
-                  	custbody_cfdi_metpago_sat: currentRecord.getText({fieldId:'custbody_cfdi_metpago_sat'}),
-                    custbody_cfdi_formadepago: currentRecord.getText({fieldId:'custbody_cfdi_formadepago'}),
-                    custbody_uso_cfdi: currentRecord.getText({fieldId:'custbody_uso_cfdi'}),
+                    CustbodyRefpdf: currentRecord.getValue({fieldId: 'custbody_fe_sf_pdf'}),
+                    CfdiMetPagoSat: currentRecord.getText({fieldId:'custbody_cfdi_metpago_sat'}),
+                    CFDIFormaDePago: currentRecord.getText({fieldId:'custbody_cfdi_formadepago'}),
+                    UsoCFDI: currentRecord.getText({fieldId:'custbody_uso_cfdi'}),
                     currencysymbol: currentRecord.getText({fieldId:'currencysymbol'}),
                     cfdiComentario: currentRecord.getValue({fieldId:'custbody_fe_sf_codigo_respuesta'}),
                     responseCfdi: currentRecord.getValue({fieldId:'custbody_fe_sf_mensaje_respuesta'})
                 };
               //  Invoice.lineItems= { item:lineas };
-              Factura.Invoice = JSON.stringify(Invoice);
-              Factura.InvoicesDetail={ item:lineas };
-       
+              Factura.Invoice=Invoice; // JSON.stringify(Invoice);
+              Factura.InvoicesDetail=lineas;
+       log.error('json',JSON.stringify(Factura));
+       Factura=JSON.stringify(Factura);
                 var startTime = util.nanoTime();
            
-                 httpService.post('api/Invoice/InsertInvoice', Factura );
+                 httpService.post('Invoice​/InvoiceInsertLWS', Factura );
                
               var elapsedTime = (util.nanoTime() - startTime)/1000000000.0;
               log.error("ElapsedTimer",elapsedTime);
@@ -115,29 +116,7 @@ define(['SuiteScripts/INDAR SCRIPTS/LWS_HTTP_CONNECTION','N/util', 'N/search', '
               log.error("ElapsedTime Catch",elapsedTime);
                 var archivo = generaArchivo(Factura, currentRecord.getValue({ fieldId: 'tranid' }));
             }
-            ///--------------------------- consumir servicio FTP --------------------------//
-
-
-            /*
-            var myPswGuid = "1a92c243a88b41ec8834a550303460cd";
-            var myHostKey = "AAAAB3NzaC1yc2EAAAABIwAAAIEA1JUi/fJG26oES9hJSWDrvw7CXvXJXmCUwSWqWMZqXHgrCKmAKZE+GfPpWCiMegFw1eXZslL4mO6tWRK6hprXfzQTmXFkERi7zbjMyPcNjcNvWxa6EjkRJkbkpTnMpqaG2c2MLIErwuUTa1xH1gntEyxJ0CjPuHmsZE/MMERTYbk=";
-            var conn = sftp.createConnection(//valoresFTP
-                {
-                    username: 'netsuite',
-                    passwordGuid: myPswGuid,
-                    url: 'indarftp.dyndns.org',
-                    port: 7000,
-                    directory: '/WMS/INVOICE',
-                    hostKey: myHostKey,
-                    hostKeyType: 'rsa'
-                });
-
-
-            conn.upload({
-                'file': file.load( { id: archivo } ),
-                'replaceExisting': true
-            });
-                */
+      
         }
 
        
