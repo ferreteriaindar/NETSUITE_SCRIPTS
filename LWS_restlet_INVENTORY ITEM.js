@@ -166,7 +166,13 @@
                                Price8:Precio8,
                                PrecioControlado                   :currentRecord.getValue({fieldId: 'custitem_nso_indr_controlled_price'}),
                                MargenControlado                   :currentRecord.getValue({fieldId: 'custitemcustitem_zindar_plazo_control' }),
-                               MargenBajo                         : currentRecord.getValue({ fieldId: 'custitemcustitem_zindar_margen_bajo' })
+                               MargenBajo                         : currentRecord.getValue({ fieldId: 'custitemcustitem_zindar_margen_bajo' }),
+                               CP_MaterialPeligroso               : currentRecord.getValue({ fieldId: 'custitem_imr_cmcp_es_material_peligros' }),
+                               CP_CodigoSTCC                      : currentRecord.getValue({ fieldId: 'custitem_imr_cmcp_codigo_stcc' }),
+                               CP_ClaveMaterialPeligroso          : currentRecord.getValue({ fieldId: 'custitem_imr_cmcp_clave_material_pelig' }),
+                               CP_PesoUnitario                    : currentRecord.getValue({ fieldId: 'custitem_imr_cmcp_peso_unitario' }),
+                               CP_ClaveUnidadPeso                 : currentRecord.getValue({ fieldId: 'custitem_imr_cmcp_clave_unidad_peso' }),
+                               CP_ClaveEmbalajePeligrosos         : currentRecord.getValue({ fieldId: 'custitem_imr_cmcp_clave_embalaje' })
   
                            
                            

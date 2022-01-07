@@ -1,10 +1,13 @@
 /**
-
+- NombreArchivo: NSO_integracion_articwms_uejs
+- NombreScript: NSO | integación Artic - WMS
+- IdScript: customscript_nso_ue_integ_articwms
+- Implementación: customdeploy_nso_ue_integ_articwms   Lot numbered Inventory item
 - Descripción: Genera un Json con los valores del articulo de inventario, lo almacena en un archivo y lo sube al servidor FTP
 - Autor: Itzadiana Morales Rivera
 - Biblioteca:
 - Lenguaje: Javascript
-- FechaCreación: 2021/11/17
+- FechaCreación: 2019/Marzo/04
  *@NApiVersion 2.x
  *@NScriptType UserEventScript
  *@NModuleScope: Public
@@ -24,6 +27,7 @@
          }
  
          try {
+           var start = new Date();
              var currentRecordAux = context.newRecord;
              var currentRecord    = record.load( { type:currentRecordAux.type,id:currentRecordAux.id } );
              var valoresArticulos = {};
@@ -226,8 +230,14 @@
                              balas                               : currentRecord.getValue({fieldId:'custitem_zindar_balas'}),
                            precioControlado                   :currentRecord.getValue({fieldId: 'custitem_nso_indr_controlled_price'}),
                              margenControlado                   :currentRecord.getValue({fieldId: 'custitemcustitem_zindar_plazo_control' }),
-                             margenBajo                         : currentRecord.getValue({ fieldId: 'custitemcustitem_zindar_margen_bajo' })
-
+                             margenBajo                         : currentRecord.getValue({ fieldId: 'custitemcustitem_zindar_margen_bajo' }),
+                             CP_MaterialPeligroso               : currentRecord.getValue({ fieldId: 'custitem_imr_cmcp_es_material_peligros' }),
+                             CP_CodigoSTCC                      : currentRecord.getValue({ fieldId: 'custitem_imr_cmcp_codigo_stcc' }),
+                             CP_ClaveMaterialPeligroso          : currentRecord.getValue({ fieldId: 'custitem_imr_cmcp_clave_material_pelig' }),
+                             CP_PesoUnitario                    : currentRecord.getValue({ fieldId: 'custitem_imr_cmcp_peso_unitario' }),
+                             CP_ClaveUnidadPeso                 : currentRecord.getValue({ fieldId: 'custitem_imr_cmcp_clave_unidad_peso' }),
+                             CP_ClaveEmbalajePeligrosos         : currentRecord.getValue({ fieldId: 'custitem_imr_cmcp_clave_embalaje' })
+                        
  
                            
  
@@ -253,6 +263,12 @@
          log.error('EnviaIWS','inicia');
            httpService.post('api/Item/Insert', valoresArticulos ); 
              currentRecord.setValue( { fieldId : 'custitem_nso_intgrcn_sncrnzd', value : true } );
+           
+           var time = new Date() - start;
+           log.error({
+               title: 'FIN',
+               details: time
+           });
  
  
          } catch ( ex ) {
