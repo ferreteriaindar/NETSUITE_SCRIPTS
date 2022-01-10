@@ -56,6 +56,11 @@
                   }
                   if(SaleOrder.getSublistValue( { sublistId: 'item', line: i, fieldId: 'quantityfulfilled' } )<SaleOrder.getSublistValue( { sublistId: 'item', line: i, fieldId: 'quantity' } ))
                   {
+
+                    VentaVentaNoConcluidaLineas.push( {
+                        articulo:  SaleOrder.getSublistValue({ sublistId: 'item', line: i, fieldId: 'item' }),
+                        cantidad:  (SaleOrder.getSublistValue( { sublistId: 'item', line: i, fieldId: 'quantity' } ))
+                    }); 
                       log.error('Detecta Parcial','si'+SaleOrder.getSublistText({ sublistId: 'item', line: i, fieldId: 'item' }));
                       SaleOrder.setSublistValue({
                           sublistId: 'item',
@@ -63,19 +68,21 @@
                           line: i,
                           value: true
                       });
-                      VentaPerdidaLineas.push( {
+                   /*   VentaPerdidaLineas.push( {
                           articulo:  SaleOrder.getSublistValue({ sublistId: 'item', line: i, fieldId: 'item' }),
                           cantidad:  (SaleOrder.getSublistValue( { sublistId: 'item', line: i, fieldId: 'quantity' } )-SaleOrder.getSublistValue( { sublistId: 'item', line: i, fieldId: 'quantityfulfilled' } ))
-                      });
+                      });*/
+
+
                   }
-                  if(SaleOrder.getSublistValue( { sublistId: 'item', line: i, fieldId: 'quantityonhand' } )>0)
+                 /* if(SaleOrder.getSublistValue( { sublistId: 'item', line: i, fieldId: 'quantityonhand' } )>0)
                   {
                     VentaVentaNoConcluidaLineas.push( {
                         articulo:  SaleOrder.getSublistValue({ sublistId: 'item', line: i, fieldId: 'item' }),
                         cantidad:  (SaleOrder.getSublistValue( { sublistId: 'item', line: i, fieldId: 'quantity' } ))
                     });   
 
-                  }
+                  } */
 
 
 
