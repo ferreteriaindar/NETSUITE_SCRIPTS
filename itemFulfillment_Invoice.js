@@ -244,6 +244,7 @@
 		title: 'INICIA SCRIPT',
 		details: context.createdfrom.id
 	});
+      log.error('WMS',context.wms);
 		try {
 					
 			if(sumaCantidadTotal(context.lines))
@@ -295,6 +296,7 @@
           	log.debug('total: ', total);
           	log.debug('discount: ', disc);
             log.debug('discountAmount: ', discAmount.toFixed(4));
+			billRecord.setValue('custbody_zindar_wmsclave',context.wms);
             billRecord.setValue('custbody_nso_indr_total_discount',discAmount.toFixed(4));
             billRecord.setValue('custbody_nso_indr_discount_16p',discAmount.toFixed(2));
             billRecord.setValue('custbody_nso_indr_zero_tax_discount', 0);

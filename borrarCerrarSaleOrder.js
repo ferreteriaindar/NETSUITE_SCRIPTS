@@ -60,7 +60,8 @@
                     VentaVentaNoConcluidaLineas.push( {
                         articulo:  SaleOrder.getSublistValue({ sublistId: 'item', line: i, fieldId: 'item' }),
                         cantidad:  (SaleOrder.getSublistValue( { sublistId: 'item', line: i, fieldId: 'quantity' } ))
-                    }); 
+                    });   
+
                       log.error('Detecta Parcial','si'+SaleOrder.getSublistText({ sublistId: 'item', line: i, fieldId: 'item' }));
                       SaleOrder.setSublistValue({
                           sublistId: 'item',
@@ -72,18 +73,16 @@
                           articulo:  SaleOrder.getSublistValue({ sublistId: 'item', line: i, fieldId: 'item' }),
                           cantidad:  (SaleOrder.getSublistValue( { sublistId: 'item', line: i, fieldId: 'quantity' } )-SaleOrder.getSublistValue( { sublistId: 'item', line: i, fieldId: 'quantityfulfilled' } ))
                       });*/
-
-
                   }
-                 /* if(SaleOrder.getSublistValue( { sublistId: 'item', line: i, fieldId: 'quantityonhand' } )>0)
+               /*   if(SaleOrder.getSublistValue( { sublistId: 'item', line: i, fieldId: 'quantityonhand' } )>0)
                   {
                     VentaVentaNoConcluidaLineas.push( {
                         articulo:  SaleOrder.getSublistValue({ sublistId: 'item', line: i, fieldId: 'item' }),
                         cantidad:  (SaleOrder.getSublistValue( { sublistId: 'item', line: i, fieldId: 'quantity' } ))
                     });   
 
-                  } */
-
+                  }
+*/
 
 
               }
@@ -130,7 +129,7 @@
             ventaNoConcluida.setValue('custrecord_ventanoconcluida_fecha',receipt_date2);
             ventaNoConcluida.setValue({fieldId:'custrecord_ventanoconcluida_cliente',value:SaleOrder.getValue('entity')});
             var idVentaNoConcluida= ventaNoConcluida.save({ignoreMandatoryFields:true});
-            log.debug({
+            log.error({
                 title: 'ID_VNC',
                 details: idVentaNoConcluida
             });
