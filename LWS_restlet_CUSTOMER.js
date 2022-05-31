@@ -109,7 +109,8 @@
                              lastmodifieddate        : currentRecord.getValue( { fieldId : 'lastmodifieddate' } ),
                              CategoryId                : currentRecord.getValue( { fieldId : 'category' } ) ,
                              latitud                 :currentRecord.getValue( { fieldId : 'custentityzindar_latitud' } ),
-                               longitud				:currentRecord.getValue( { fieldId : 'custentityzindar_longitud' } )
+                               longitud				:currentRecord.getValue( { fieldId : 'custentityzindar_longitud' } ),
+                            isInactive              :currentRecord.getValue( { fieldId : 'isinactive' } )
  
  
  

@@ -57,60 +57,19 @@
 				invNumbers.name[name] = searchResults[i].id;
 			}
 		}
-		
-
+      log.error('detalleInventario',invNumbers);
 		return invNumbers;
 	}
 	
 	function setLotNumbers( inventoryDetail, inventoryNumbers, quantity, lineInfo ) {
 		for ( var i = 0; i < inventoryNumbers.length  && quantity > 0; i++ ) {
-			log.error('inventorynumber',inventoryNumbers[i].id)
+          log.error('inventorynumber',inventoryNumbers[i].id);
 			inventoryDetail.selectNewLine( 'inventoryassignment' );
 			inventoryDetail.setCurrentSublistValue( 'inventoryassignment', 'issueinventorynumber', inventoryNumbers[i].id );
 			inventoryDetail.setCurrentSublistValue( 'inventoryassignment', 'quantity', inventoryNumbers[i].qty > quantity ? quantity : inventoryNumbers[i].qty );
 			inventoryDetail.commitLine( 'inventoryassignment' );
 			quantity = quantity - inventoryNumbers[i].qty;
 		}
-	}
-
-
-	function setLotNumbers_Indar(inventoryDetail,Item,quantity,location)
-	{
-		var filters = [
-			{ name: 'item', operator: 'anyof', values: Item },
-			{ name: 'quantityavailable', operator: 'greaterthan', values: 0 },
-			{ name: 'location', operator:'anyof', values: location}
-		];
-		var searchResults = search.create( {
-			type: 'inventorynumber',
-			filters: filters,
-			columns: [ search.createColumn({name: "internalid", label: "Number"}),
-			search.createColumn({name: "item", label: "Item"}),
-			search.createColumn({name: "memo", label: "Memo"}),
-			search.createColumn({name: "expirationdate", label: "Expiration Date"}),
-			search.createColumn({name: "location", label: "Location"}),
-			search.createColumn({name: "quantityavailable", label: "quantityavailable"}),
-			search.createColumn({
-			   name: "datecreated",
-			   sort: search.Sort.ASC,
-			   label: "Date Created"
-			})]
-		} );
-		searchResults = getResults( searchResults );
-		if ( searchResults.length > 0 ) {
-				for (var i = 0; i < searchResults.length && quantity>0; i++ ) {
-
-					var  cantidad_aux=searchResults[i].getValue( { name: 'quantityavailable' } ) ;
-					inventoryDetail.selectNewLine( 'inventoryassignment' );
-					inventoryDetail.setCurrentSublistValue( 'inventoryassignment', 'issueinventorynumber', searchResults[i].getValue( { name: 'internalid' } ) );
-					inventoryDetail.setCurrentSublistValue( 'inventoryassignment', 'quantity', quantity>cantidad_aux?searchResults[i].getValue( { name: 'quantityavailable' } ):quantity  );
-					inventoryDetail.commitLine( 'inventoryassignment' );
-					quantity=quantity-cantidad_aux;
-					
-				}
-		}
-
-
 	}
 	
 	function addItemFulfillMentLines( itemFulfillMent, context ) {
@@ -175,10 +134,11 @@
 								
 					//TEMA  DE NUMEROS DE SERIE Y LOTE   NO ESTA PROBADO POR QUE NO LO USAMOS EN INDAR
 					if ( itemFulfillMent.getCurrentSublistValue( { sublistId: 'item', fieldId: 'inventorydetailreq' } ) == 'T' && context.createdfrom.recordType == 'salesorder' ) {
-						/*if ( inventoryNumbers[LineasFulfillMent[i].itemId][LineasFulfillMent[i].location ] ) {
+                      log.error('LOTE','ENTRA');
+						if ( inventoryNumbers[LineasFulfillMent[i].itemId][LineasFulfillMent[i].location ] ) {
 							var inventoryDetail = itemFulfillMent.getCurrentSublistSubrecord( 'item', 'inventorydetail' );
 							setLotNumbers( inventoryDetail, inventoryNumbers[LineasFulfillMent[i].itemId][LineasFulfillMent[i].location ] ,LineasFulfillMent[i].quantity );
-						} else {  // ESTOS ES EL TEMA LOS NUMEROS DE  SERIE /  BIN_NUMBER
+						} else {
 							if ( LineasContext[j].inventorydetail ) {
 								if ( LineasContext[j].inventorydetail.length > 0 ) {
 									for ( var z = 0; z< LineasContext[j].inventorydetail.length; z++ ) {
@@ -192,14 +152,7 @@
 								}
 							}
 							
-						}*/
-							//AGREGADO RVELASCO 26/04/2022 SOLO PARA  NUMERO DE LOTE /PEDIMENTO, NO PARA  BIN O NUMERO DE SERIE
-							var inventoryDetail = itemFulfillMent.getCurrentSublistSubrecord( 'item', 'inventorydetail' );
-							var ItemActual=itemFulfillMent.getCurrentSublistValue( { sublistId: 'item', fieldId: 'item' } );
-							var CantidadActual=itemFulfillMent.getCurrentSublistValue( { sublistId: 'item', fieldId: 'quantity' } );
-							var locationActual=itemFulfillMent.getCurrentSublistValue( { sublistId: 'item', fieldId: 'location' } ); 
-							setLotNumbers_Indar(inventoryDetail,ItemActual,CantidadActual,locationActual);
-
+						}
 					}	
 					////FIN DE  NUMEROS DE SERIE
 					itemFulfillMent.commitLine( 'item' );

@@ -197,7 +197,7 @@
       email.send({
           author:autor, //9083, // context.getValue('employee'),
           recipients: context.getValue('custbodylh_aprobador'),    // recordType=='exprept'?context.getValue('nextapprover'):context.getValue('custbodylh_aprobador'),
-          subject: 'Autorizar PEDIDO ',
+          subject: recordType=='exprept'?'Autorizar Informe de Gastos':'Autorizar Pedido', // 'Autorizar PEDIDO ',
           body: myvar,
           relatedRecords: {
             transactionId: context.getValue('id')

@@ -6,13 +6,13 @@
 
 //define( [ 'SuiteScripts/sftp/indr_sftp','N/error', 'N/log', 'N/runtime', 'N/file', 'N/record' ],
 
-define(['SuiteScripts/INDAR SCRIPTS/httpService','N/sftp', 'N/search', 'N/error', 'N/log', 'N/runtime', 'N/file', 'N/record'],
+define(['SuiteScripts/INDAR SCRIPTS/httpService','N/util', 'N/search', 'N/error', 'N/log', 'N/runtime', 'N/file', 'N/record'],
 
     //function( indr_sftp, error, log, runtime, file, record ) {
-    function (httpService,sftp, search, error, log, runtime, file, record) {
+    function (httpService,util, search, error, log, runtime, file, record) {
         function getJsonPoAfterSubmit(context) {
 
-            log.debug('context.type: ' + context.UserEventType);
+         //   log.debug('context.type: ' + context.UserEventType);
 
            /* if (context.type !== context.UserEventType.CREATE && context.type !== context.UserEventType.EDIT) {
 
@@ -27,6 +27,15 @@ define(['SuiteScripts/INDAR SCRIPTS/httpService','N/sftp', 'N/search', 'N/error'
                 var lineas          = [];
                 for ( var i = 0 ; i < tamaño ; i++) {
 
+                    var LoteAux='';
+                  //log.error('LOTE',currentRecord.getSublistValue( { sublistId: 'item', line: i, fieldId: 'inventorydetailreq' } ));
+                  if(currentRecord.getSublistValue( { sublistId: 'item', line: i, fieldId: 'inventorydetailreq' } )=='T')
+                    {
+                      log.error('Lote','ENTRA');
+                  LoteAux=RegresaLotes(currentRecord.getSublistValue( { sublistId: 'item', line: i, fieldId: 'inventorydetail' } ));
+                    }
+                    
+                    //LOTE VALIDA  SI  TIENEN INFORMACION SI NO PONE  VACIO
                     lineas.push( {
                         item                                :Number(currentRecord.getSublistValue( { sublistId: 'item', line: i, fieldId: 'item' } )),
                         amount                              : currentRecord.getSublistValue( { sublistId: 'item', line: i, fieldId: 'amount' } ),
@@ -38,10 +47,12 @@ define(['SuiteScripts/INDAR SCRIPTS/httpService','N/sftp', 'N/search', 'N/error'
                         quantity                            : currentRecord.getSublistValue( { sublistId: 'item', line: i, fieldId: 'quantity' } ),
                         grossamt                            : currentRecord.getSublistValue( { sublistId: 'item', line: i, fieldId: 'grossamt' } ), 
                         DiscountTotal                       : currentRecord.getSublistValue( { sublistId: 'item', line: i,fieldId: 'custcol_nso_descuento'}),
-                        isclosed                            : currentRecord.getSublistValue( { sublistId: 'item', line: i, fieldId: 'isclosed' } )
-
+                        isclosed                            : currentRecord.getSublistValue( { sublistId: 'item', line: i, fieldId: 'isclosed' } ),
+                        lote                                : LoteAux
 
                     });
+                            
+                    
                 }
                log.debug('TRANID',Number( currentRecord.getValue({ fieldId: 'tranid' })));
                 valoresFactura = {
@@ -93,17 +104,26 @@ define(['SuiteScripts/INDAR SCRIPTS/httpService','N/sftp', 'N/search', 'N/error'
                     custbody_uso_cfdi: currentRecord.getText({fieldId:'custbody_uso_cfdi'}),
                     currencysymbol: currentRecord.getText({fieldId:'currencysymbol'}),
                     cfdiComentario: currentRecord.getValue({fieldId:'custbody_fe_sf_codigo_respuesta'}),
-                    responseCfdi: currentRecord.getValue({fieldId:'custbody_fe_sf_mensaje_respuesta'})
+                    responseCfdi: currentRecord.getValue({fieldId:'custbody_fe_sf_mensaje_respuesta'}),
+                    wmsclave: currentRecord.getValue({fieldId:'custbody_zindar_wmsclave'})
                 };
                 valoresFactura.lineItems= { item:lineas };
                 valoresFactura = JSON.stringify(valoresFactura)
-                //log.debug(valoresFactura);
+            //   log.debug('JSON',valoresFactura);
                 //var archivo = generaArchivo(valoresFactura, currentRecord.getValue({ fieldId: 'tranid' }));
-                httpService.post('api/Invoice/InsertInvoice', valoresFactura );
+                var startTime = util.nanoTime();
+              if(currentRecord.getValue({fieldId:'id'})>77535)
+               {log.error('id','no es SI')
+                 httpService.post('api/Invoice/InsertInvoice', valoresFactura );
+               }
+              var elapsedTime = (util.nanoTime() - startTime)/1000000000.0;
+              log.error("ElapsedTimer",elapsedTime);
                generaArchivo(valoresFactura, currentRecord.getValue({ fieldId: 'tranid' }));
 
             } catch (ex) {
                 log.error('Error en la creación y guardado del JSON en netsuite', ex);
+                 var elapsedTime = (util.nanoTime() - startTime)/1000000000.0;
+              log.error("ElapsedTime Catch",elapsedTime);
                 var archivo = generaArchivo(valoresFactura, currentRecord.getValue({ fieldId: 'tranid' }));
             }
             ///--------------------------- consumir servicio FTP --------------------------//
@@ -129,6 +149,30 @@ define(['SuiteScripts/INDAR SCRIPTS/httpService','N/sftp', 'N/search', 'N/error'
                 'replaceExisting': true
             });
                 */
+        }
+
+
+
+        function  RegresaLotes(inventorydetailId)
+        {
+            var cadenafinal='';
+            var searchLot = search.create({
+                type: 'inventorydetail',
+                filters: [ ["internalid","anyof",inventorydetailId]],
+                columns: ['inventorynumber','quantity']
+            });
+            searchLot.run().each(function(result) {
+                var id = result.getText({
+                name: 'inventorynumber'
+                });
+                var cant=result.getValue({
+                    name: 'quantity'
+                    });
+                log.error('Lote','No. Lote '+id+' Cant.='+cant);
+                cadenafinal=cadenafinal+'No. Lote '+id+' Cant.='+cant+' ';
+                });
+			return cadenafinal;
+
         }
 
         function getSFTPConf(directory) {

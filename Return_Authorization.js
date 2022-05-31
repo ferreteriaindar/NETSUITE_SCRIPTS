@@ -1,7 +1,7 @@
 /**
  *@NApiVersion 2.x
  *@NScriptType Restlet
- *@Autor L&L
+ *@Autor L&L EL MISA SLC 2V 
  *@Company Indar
  *@NModuleScope Public
   *@Description Script encargado de generar a partir de una factura una Autorizacion de Devolucion.
@@ -45,6 +45,8 @@
                                 existe=1;
                                RA.selectLine({ sublistId: 'item',line: i    });
                                RA.setCurrentSublistValue({sublistId: 'item',  fieldId: 'quantity',value: lines[j].quantity });
+                               RA.setCurrentSublistValue({sublistId: 'item',  fieldId: 'price',value: '-1' });
+                               RA.setCurrentSublistValue({sublistId: 'item',  fieldId: 'rate',value: lines[j].rate });
                                RA.commitLine({sublistId: 'item'});
                             }
                         
