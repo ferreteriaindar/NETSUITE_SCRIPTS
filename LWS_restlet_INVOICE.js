@@ -6,10 +6,10 @@
 
 //define( [ 'SuiteScripts/sftp/indr_sftp','N/error', 'N/log', 'N/runtime', 'N/file', 'N/record' ],
 
-define(['SuiteScripts/INDAR SCRIPTS/LWS_HTTP_CONNECTION','N/util',  'N/error', 'N/log', 'N/runtime', 'N/file', 'N/record'],
+define(['SuiteScripts/INDAR SCRIPTS/LWS_HTTP_CONNECTION','N/util',  'N/error', 'N/log', 'N/runtime', 'N/file', 'N/record','N/search'],
 
     //function( indr_sftp, error, log, runtime, file, record ) {
-    function (httpService,util,  error, log, runtime, file, record) {
+    function (httpService,util,  error, log, runtime, file, record,search) {
         function getJsonPoAfterSubmit(context) {
 
             log.debug('context.type: ' + context.UserEventType);
@@ -29,6 +29,14 @@ define(['SuiteScripts/INDAR SCRIPTS/LWS_HTTP_CONNECTION','N/util',  'N/error', '
                 var lineas          = [];
                 for ( var i = 0 ; i < tamaño ; i++) {
 
+
+                    var LoteAux='';
+                    //log.error('LOTE',currentRecord.getSublistValue( { sublistId: 'item', line: i, fieldId: 'inventorydetailreq' } ));
+                    if(currentRecord.getSublistValue( { sublistId: 'item', line: i, fieldId: 'inventorydetailreq' } )=='T')
+                      {
+                        log.error('Lote','ENTRA');
+                    LoteAux=RegresaLotes(currentRecord.getSublistValue( { sublistId: 'item', line: i, fieldId: 'inventorydetail' } ));
+                      }
                     lineas.push( {
                         item                                :Number(currentRecord.getSublistValue( { sublistId: 'item', line: i, fieldId: 'item' } )),
                         amount                              : currentRecord.getSublistValue( { sublistId: 'item', line: i, fieldId: 'amount' } ),
@@ -40,12 +48,19 @@ define(['SuiteScripts/INDAR SCRIPTS/LWS_HTTP_CONNECTION','N/util',  'N/error', '
                         quantity                            : currentRecord.getSublistValue( { sublistId: 'item', line: i, fieldId: 'quantity' } ),
                         grossamt                            : currentRecord.getSublistValue( { sublistId: 'item', line: i, fieldId: 'grossamt' } ), 
                         DiscountTotal                       : currentRecord.getSublistValue( { sublistId: 'item', line: i,fieldId: 'custcol_nso_descuento'}),
-                        isclosed                            : currentRecord.getSublistValue( { sublistId: 'item', line: i, fieldId: 'isclosed' } )
+                        isclosed                            : currentRecord.getSublistValue( { sublistId: 'item', line: i, fieldId: 'isclosed' } ),
+                        lote                                : LoteAux
 
 
                     });
                 }
                log.debug('TRANID',Number( currentRecord.getValue({ fieldId: 'tranid' })));
+                    //busca los pdf y xml
+
+                    var urls =regresarURLS(currentRecord.getValue({ fieldId: 'custbody_fe_sf_xml_sat' }),currentRecord.getValue({ fieldId: 'custbody_fe_sf_pdf' }));
+                   // log.error('urls 0',urls[0]);
+                   // log.error('urls 1',urls[1]);
+                    log.error('urls',urls);
                 Invoice = {
                     internalId: currentRecord.getValue({fieldId:'id'}),
                     TranId:Number( currentRecord.getValue({ fieldId: 'tranid' })),
@@ -95,12 +110,18 @@ define(['SuiteScripts/INDAR SCRIPTS/LWS_HTTP_CONNECTION','N/util',  'N/error', '
                     UsoCFDI: currentRecord.getText({fieldId:'custbody_uso_cfdi'}),
                     currencysymbol: currentRecord.getText({fieldId:'currencysymbol'}),
                     cfdiComentario: currentRecord.getValue({fieldId:'custbody_fe_sf_codigo_respuesta'}),
-                    responseCfdi: currentRecord.getValue({fieldId:'custbody_fe_sf_mensaje_respuesta'})
+                    responseCfdi: currentRecord.getValue({fieldId:'custbody_fe_sf_mensaje_respuesta'}),
+                    wmsclave: currentRecord.getValue({fieldId:'custbody_zindar_wmsclave'}),
+                    urlXML:     urls.length>0? urls[0]:'',
+                    urlsPDF:    urls.length>0? urls[1]:'',
+                   
                 };
               //  Invoice.lineItems= { item:lineas };
+              log.error('XML',Invoice.urlXML);
+              log.erro('PDF',Invoice.urlsPDF);
               Factura.Invoice=Invoice; // JSON.stringify(Invoice);
               Factura.InvoicesDetail=lineas;
-       log.error('json',JSON.stringify(Factura));
+     //  log.error('json',JSON.stringify(Factura));
        Factura=JSON.stringify(Factura);
                 var startTime = util.nanoTime();
            
@@ -114,16 +135,72 @@ define(['SuiteScripts/INDAR SCRIPTS/LWS_HTTP_CONNECTION','N/util',  'N/error', '
                 log.error('Error en la creación y guardado del JSON en netsuite', ex);
                  var elapsedTime = (util.nanoTime() - startTime)/1000000000.0;
               log.error("ElapsedTime Catch",elapsedTime);
-                var archivo = generaArchivo(Factura, currentRecord.getValue({ fieldId: 'tranid' }));
+               // var archivo = generaArchivo(Factura, currentRecord.getValue({ fieldId: 'tranid' }));
             }
       
         }
 
-       
+        function  RegresaLotes(inventorydetailId)
+        {
+            var cadenafinal='';
+            var searchLot = search.create({
+                type: 'inventorydetail',
+                filters: [ ["internalid","anyof",inventorydetailId]],
+                columns: ['inventorynumber','quantity']
+            });
+            searchLot.run().each(function(result) {
+                var idLot = result.getText({
+                name: 'inventorynumber'
+                });
+                var cant=result.getValue({
+                    name: 'quantity'
+                    });
+                log.error('Lote','No. Lote '+idLot+' Cant.='+cant);
+                cadenafinal=cadenafinal+'No. Ped. '+idLot+' Cant.='+cant+' ';
+                });
+                return cadenafinal;
+
+        }
+
+
+
+        function regresarURLS(idXML,idPDF)
+        {
+            var urlsaux=[]
+            //log.error('regresaURLS','si');  
+           
+             var archivo= file.load({id:idXML});
+             log.error('esOFFILINE',archivo.isOnline);
+             if(archivo.isOnline==false)
+             {
+               //  log.error('lo hace vivo', 'si')
+                 archivo.isOnline = true;
+                 idarchivo = archivo.save();
+                  archivo =  file.load({id:idarchivo});
+             }
+          //   log.error('archivourl',archivo.url);
+            urlsaux.push("https://5327814.app.netsuite.com"+archivo.url);
+
+
+            var archivo2= file.load({id:idPDF});
+         //   log.error('esOFFILINE',archivo2.isOnline);
+            if(archivo2.isOnline==false)
+            {
+            //    log.error('lo hace vivo', 'si')
+                archivo2.isOnline = true;
+                idarchivo2 = archivo2.save();
+                 archivo2 =  file.load({id:idarchivo2});
+            }
+          //  log.error('archivo2url',archivo2.url);
+            urlsaux.push("https://5327814.app.netsuite.com"+archivo2.url);
+            return urlsaux;
+        
+
+        }
 
         function generaArchivo(contenido, nombreArchivo) {
 
-            var fileObjPDF = null,
+            /*
                 fileObj = file.create({
                     name: nombreArchivo + '.json',
                     fileType: file.Type.PLAINTEXT,
@@ -133,7 +210,18 @@ define(['SuiteScripts/INDAR SCRIPTS/LWS_HTTP_CONNECTION','N/util',  'N/error', '
                     folder: 12538682,
                     isOnline: true
                 });
-            return fileObj.save();
+            return fileObj.save();*/
+            
+         var   fileObj = file.create({
+                name: nombreArchivo + '.json',
+                fileType: file.Type.PLAINTEXT,
+                contents: contenido,
+                description: 'Archivo .json pra la inegración Artículos de inventario',
+                encoding: file.Encoding.UTF8,
+                folder: 12538682,
+                isOnline: true
+            });
+        return fileObj.save();
         }
 
         return {
