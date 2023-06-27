@@ -43,7 +43,10 @@
                          listPrice: currentRecord.getSublistValue({ sublistId: 'item', line: i, fieldId: 'price' }),
                          amount: currentRecord.getSublistValue( { sublistId: 'item', line: i, fieldId: 'amount' } ),
                          rate: currentRecord.getSublistValue({sublistId:'item',line:i,fieldId:'rate'}),
-                         taxrate: currentRecord.getSublistValue({sublistId:'item',line:i,fieldId:'taxrate1'})
+                         taxrate: currentRecord.getSublistValue({sublistId:'item',line:i,fieldId:'taxrate1'}),
+                         IdWebDet:  currentRecord.getSublistValue({sublistId:'item',line:i,fieldId:'custcol_zindar_idweb_det'}),
+                         DescuentoPPDet: currentRecord.getSublistValue({sublistId:'item',line:i,fieldId:'custcol_zindar_descuentoppdetalle'}),
+                         PlazoDet: currentRecord.getSublistValue({sublistId:'item',line:i,fieldId:'custcol_zindar_plazodetalle'}),
  
  
                      });
@@ -55,9 +58,26 @@
                var arr = direcciones.split("\n"); 
                arr=util.isNumber(Number(arr[1]))?arr:currentRecord.getValue('shipaddresslist');
                arrBill=util.isNumber(Number(arrBill[1]))?arrBill:currentRecord.getValue('billaddresslist');
+
+
+
+                    /*      var regex = /\[(\d+):\w+\]/g;
+                          var str= currentRecord.getValue('address_country_state_map');
+                          var numbers = [];
+                          var match;
+                          
+                          while ((match = regex.exec(str)) !== null) {
+                            var number = match[1];
+                            numbers.push(number);
+                          }
+                          
+                          var lastNumber = numbers.pop();
+
+            log.error('idship',lastNumber); // Output: "103563"*/
                
              //log.error('ES NUMERO',util.isNumber(Number(arr[1].valueOf())));
              //   log.error('ES NUMERO',util.isNumber(Number(arr[1])));
+               log.error('shipadresseee',current_record.getValue('shipaddressee'));
                  valoresOv = {
                      idCustomer: currentRecord.getValue('entity'),
                      location: currentRecord.getValue('location'),
@@ -76,8 +96,10 @@
                      memo: currentRecord.getValue('memo'),
                      shippingWay: currentRecord.getValue('custbody_forma_de_envio'),
                      customerDiscountPP: currentRecord.getValue('custbody_nso_indr_client_discount'),
-                     billingAddress: (currentRecord.getValue('source')=='CSV')?arrBill[1]:(currentRecord.getValue('billaddresslist')=='')?currentRecord.getValue('billingaddress_key'):currentRecord.getValue('billaddresslist'),
-                     shippingAddress:(currentRecord.getValue('source')=='CSV')?arr[1]: (currentRecord.getValue('shipaddresslist')=='')?currentRecord.getValue('shippingaddress_key'):currentRecord.getValue('shipaddresslist'),                            
+                    // billingAddress: (currentRecord.getValue('source')=='CSV')?arrBill[1]:(currentRecord.getValue('billaddresslist')=='')?currentRecord.getValue('billingaddress_key'):currentRecord.getValue('billaddresslist'),
+                     billingAddress: currentRecord.getValue('billaddresslist'),
+                  //   shippingAddress:(currentRecord.getValue('source')=='CSV')?arr[1]: (currentRecord.getValue('shipaddresslist')=='')?currentRecord.getValue('shippingaddress_key'):currentRecord.getValue('shipaddresslist'), 
+                     shippingAddress:currentRecord.getValue('shipaddresslist'),
                      subtotal: currentRecord.getValue( { fieldId : 'subtotal' } ),
                      taxtotal: currentRecord.getValue( { fieldId : 'taxtotal' } ),
                      total: currentRecord.getValue( { fieldId : 'total' } ),

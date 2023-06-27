@@ -8,7 +8,7 @@
  *@Description Script que crea una Orden de Venta a partir de un JSON.
  */
 
-define( ['N/error', 'N/record', 'N/format', 'N/search'], function( error, record, format, search ) {
+ define( ['N/error', 'N/record', 'N/format', 'N/search'], function( error, record, format, search ) {
 
   var handler = {};
 
@@ -29,9 +29,18 @@ define( ['N/error', 'N/record', 'N/format', 'N/search'], function( error, record
         salesOrderIndar.setCurrentSublistValue( 'item',  'item', lines[i].itemId );
         salesOrderIndar.setCurrentSublistValue( 'item',  'quantity', lines[i].quantity );
         salesOrderIndar.setCurrentSublistValue( 'item',  'price', lines[i].listPrice );
+        salesOrderIndar.setCurrentSublistValue( 'item',  'custcol_zindar_idweb_det', lines[i].idWeb_DET );
+        salesOrderIndar.setCurrentSublistValue( 'item',  'custcol_zindar_descuentoppdetalle', lines[i].descuento_DET );
+        salesOrderIndar.setCurrentSublistValue( 'item',  'custcol_zindar_plazodetalle', lines[i].plazo_DET );
         if(lines[i].listPrice=='-1')
          { log.debug('REGALO','SI');
            salesOrderIndar.setCurrentSublistValue( 'item',  'rate', .01 );
+           if(lines[i].itemId==167006 || lines[i].itemId==169707) // HAY QUE PONERLE EL ID DEL  H0 CEMENTOG50
+           {
+            salesOrderIndar.setCurrentSublistValue( 'item',  'rate', lines[i].rate );
+            if( context.shippingWay['id']==9) //SI ES  CEMENTO Y FORMA DE ENVIO CCI LOCAL SE CAMBIA A  HOLCIM CEMENTO
+            salesOrderIndar.setValue( { fieldId: 'custbody_forma_de_envio', value:29  } );
+           }
          }
         salesOrderIndar.commitLine( 'item' );
       }
@@ -88,7 +97,7 @@ define( ['N/error', 'N/record', 'N/format', 'N/search'], function( error, record
     if ( context.lineItems && context.lineItems.length > 0 ) {
       for ( var i = 0; i < context.lineItems.length; i++ ) {
         for ( var atributo in context.lineItems[i] ) {
-          if ( !context.lineItems[i][atributo] ) {
+          if ( !context.lineItems[i][atributo] && atributo!='rate' ) {
             throw error.create( { name: ERRORS.NSO_NULL_FIELD.name, message: ERRORS.NSO_NULL_FIELD.message+=' de lineItems '+[i+1]+' es: '+atributo } );
           }
         }
@@ -114,7 +123,7 @@ define( ['N/error', 'N/record', 'N/format', 'N/search'], function( error, record
       var salesOrderIndar = record.create( { type: record.Type.SALES_ORDER, isDynamic: true } );
       var idCust = context.idCustomer, idTerminoPago = context.plazoEvento['id'];
       var terms = search.lookupFields({ type: 'customrecord_nso_vendor_terms', id: idTerminoPago, columns: ['custrecord_nso_netsuite_terms_vendor'] }).custrecord_nso_netsuite_terms_vendor;
-      log.debug( 'terms', terms );
+     // log.debug( 'terms', terms );
       log.debug('STATUS_INICIO',salesOrderIndar.getValue({fieldId: 'orderstatus'}));
       salesOrderIndar.setValue({ fieldId: 'entity', value: context.idCustomer });
       salesOrderIndar.setValue({ fieldId: 'location', value: context.location });
@@ -154,7 +163,7 @@ define( ['N/error', 'N/record', 'N/format', 'N/search'], function( error, record
       salesOrderIndar.setValue({fieldId: 'custbody_zindar_tipo_entrega', value: context.TipoEntrega});
       log.debug('Status_Cambiado',salesOrderIndar.getValue({fieldId: 'orderstatus'}));
       if ( context.package ) {
-        log.debug('package', context.package['id']);
+       // log.debug('package', context.package['id']);
         salesOrderIndar.setValue( { fieldId: 'custbody_paqueteria', value: context.package['id'] } );
       }
       if ( context.shippingWay ) {

@@ -92,7 +92,7 @@
           log.error('contextCM',Enviar);
           ApplyCreditMemo(Enviar);
         
-                      /* var fileObjCSV_notas = file.create({
+                       var fileObjCSV_notas = file.create({
                           name:  context.csv_notas+'_'+context.csvName+'.csv', 
                           fileType: file.Type.CSV,
                           contents: context.csv_notas,
@@ -113,10 +113,10 @@
                     
                       scriptTask_notas.importFile = f_notas;
                       
-                      var csvImportTaskId = scriptTask_notas.submit();*/
+                      var csvImportTaskId = scriptTask_notas.submit();
 
         }
-        /*
+        
             if(context.csv_Facturas!='')
             {
               var fileObjCSV_facturas = file.create({
@@ -162,7 +162,7 @@
         scriptTask.importFile = f;
         
         var csvImportTaskId = scriptTask.submit();
-                    */
+                    
         return { 'responseStructure': { 'codeStatus': 'OK', 'descriptionStatus': 1 }, 'internalId': 0};
   
       }   catch ( e ) {

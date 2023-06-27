@@ -47,17 +47,24 @@
                          rate: currentRecord.getSublistValue({sublistId:'item',line:i,fieldId:'rate'}),
                          taxrate: currentRecord.getSublistValue({sublistId:'item',line:i,fieldId:'taxrate1'}),
                          isclosed: currentRecord.getSublistValue({sublistId:'item',line:i,fieldId:'isclosed'}),
+                         IdWebDet:  currentRecord.getSublistValue({sublistId:'item',line:i,fieldId:'custcol_zindar_idweb_det'}),
+                         DescuentoPPDet: currentRecord.getSublistValue({sublistId:'item',line:i,fieldId:'custcol_zindar_descuentoppdetalle'}),
+                         PlazoDet: currentRecord.getSublistValue({sublistId:'item',line:i,fieldId:'custcol_zindar_plazodetalle'}),
 
  
  
                      });
                  }
+
+                  var direcciones=currentRecord.getValue('shipaddress');
+               var arr = direcciones.split("\n"); 
+            // log.error('address',arr[1]);
                  saleOrder = {
                      idCustomer: currentRecord.getValue('entity'),
                      location: currentRecord.getValue('location'),
                      idWeb: currentRecord.getValue('custbody_nso_id_web'),
                      typeSale: currentRecord.getValue('custbody_nso_tipo_orden'),
-                     trandate: currentRecord.getValue('trandate'),
+                     trandate:   currentRecord.getValue('createddate'), //currentRecord.getValue('trandate'),
                      condition: currentRecord.getValue('custbody_nso_due_condition'),
                      paymetTerm: currentRecord.getValue('custbody_nso_payment_terms'),
                      term: currentRecord.getValue('terms'),
@@ -70,8 +77,10 @@
                      memo: currentRecord.getValue('memo'),
                      shippingWay: currentRecord.getValue('custbody_forma_de_envio'),
                      customerDiscountPP: currentRecord.getValue('custbody_nso_indr_client_discount'),
-                     billingAddress: (currentRecord.getValue('billaddresslist')=='')?currentRecord.getValue('billingaddress_key'):currentRecord.getValue('billaddresslist'),
-                     shippingAddress: (currentRecord.getValue('shipaddresslist')=='')?currentRecord.getValue('shippingaddress_key'):currentRecord.getValue('shipaddresslist'),
+                     //billingAddress: (currentRecord.getValue('billaddresslist')=='')?currentRecord.getValue('billingaddress_key'):currentRecord.getValue('billaddresslist'),
+                     billingAddress:currentRecord.getValue('billaddresslist'),
+                     //shippingAddress: (currentRecord.getValue('source')=='CSV')?arr[1]: (currentRecord.getValue('shipaddresslist')=='')?currentRecord.getValue('shippingaddress_key'):currentRecord.getValue('shipaddresslist'),                            
+                     shippingAddress: currentRecord.getValue('shipaddresslist'),
                      subtotal: currentRecord.getValue( { fieldId : 'subtotal' } ),
                      taxtotal: currentRecord.getValue( { fieldId : 'taxtotal' } ),
                      total: currentRecord.getValue( { fieldId : 'total' } ),
@@ -85,6 +94,7 @@
                      ordenCompra: currentRecord.getValue({ fieldId: 'custbody_orden_compra'  }),
                      ShippingAddressText: currentRecord.getValue({ fieldId: 'shippingaddress_text'}).replace(currentRecord.getValue({ fieldId: 'custbody_fe_razon_social'}),''),
                    zip:currentRecord.getValue({ fieldId: 'shipzip'  }),
+                   TipoEntrega:currentRecord.getValue({fieldId:'custbody_zindar_tipo_entrega'})
  
                  };
                
@@ -92,7 +102,7 @@
                  SO.saleOrderDetails = lineas ;
                  SO = JSON.stringify(SO);
              	 
-                   log.error('json',SO);
+                 //  log.error('json',SO);
                  var archivo = generaArchivo(SO, currentRecord.getValue({ fieldId: 'tranid' }));
                  httpService.post('SaleOrder/SaleOrderInsertLWS', SO );
  

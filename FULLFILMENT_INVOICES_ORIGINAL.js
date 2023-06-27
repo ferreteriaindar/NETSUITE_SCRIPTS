@@ -120,37 +120,34 @@
 		//Se llena arreglo  de la lista de articulos y cantidad que tiene  Fulfillmnet
 		for ( var i = 0; i < itemFulfillMent.getLineCount( 'item' ); i ++ ) {
 			itemsPosition[ itemFulfillMent.getSublistValue( 'item',  'item', i ) ] = i;
-			LineasFulfillMent.push({itemId: itemFulfillMent.getSublistValue( 'item',  'item', i ),quantity: itemFulfillMent.getSublistValue( 'item',  'quantity', i ), line:itemFulfillMent.getSublistValue( 'item',  'line', i ),idweb:itemFulfillMent.getSublistValue( 'item',  'custcolzindar_idwebdetalle', i )});
+			LineasFulfillMent.push({itemId: itemFulfillMent.getSublistValue( 'item',  'item', i ),quantity: itemFulfillMent.getSublistValue( 'item',  'quantity', i ), line:itemFulfillMent.getSublistValue( 'item',  'line', i )});
 		}
 		//Se llena arreglo de la lista de articulos del context
 
 	
-		log.error('itemsPosition',itemsPosition);
-		log.error('LineasFulfillMent',LineasFulfillMent);
+		//log.error('itemsPosition',itemsPosition);
+		//log.error('LineasFulfillMent',LineasFulfillMent);
 		var inventoryNumbers = getInventoryNumbers( Object.keys( itemsPosition ) ).item;
 	
 		var lines = context.lines;
 		for ( var i = 0; i < lines.length; i ++ ) {
-			LineasContext.push({ itemId: lines[i].itemId,quantity:lines[i].quantity,location:lines[i].location,inventorydetail:lines.inventorydetail,idweb:lines[i].IDWEB});
+			LineasContext.push({ itemId: lines[i].itemId,quantity:lines[i].quantity,location:lines[i].location,inventorydetail:lines.inventorydetail});
 
 		}
-		log.error('LineasContext',LineasContext);
+		//log.error('LineasContext',LineasContext);
 		for(var i=0;i<LineasFulfillMent.length;i++)
 		{
 		//	log.error('LineaFulfill',LineasFulfillMent[i].line);
 			itemFulfillMent.selectLine( { sublistId: 'item', line: i } );
-			
 			itemFulfillMent.setCurrentSublistValue( 'item', 'apply', 'T' );
 			var  itemId=itemFulfillMent.getCurrentSublistValue('item','item');
-			var  IDWEB=itemFulfillMent.getCurrentSublistValue('item','custcolzindar_idwebdetalle');
-			
 		//	log.error('itemActual',itemId);
 			// se recorre  el context por cada linea del fulfillment
 			for(var j=0;j<LineasContext.length;j++)
 			{
-				if(itemId==LineasContext[j].itemId && IDWEB==LineasContext[j].idweb )
+				if(itemId==LineasContext[j].itemId )
 				{
-					log.error('LINEA',LineasContext[j].itemId+'*'+LineasContext[j].idweb);
+				//	log.error('Entra'+itemId,'si');
 					itemFulfillMent.setCurrentSublistValue( { sublistId: 'item', fieldId: 'location', value: LineasContext[j].location } );
 					
 					if(LineasFulfillMent[i].quantity<LineasContext[j].quantity)
@@ -218,10 +215,10 @@
 			{
 				var bandera=0
 				for (var j = 0; j < LineasContext.length; j++) {
-					if(	itemFulfillMent.getSublistValue( 'item',  'item', i )==LineasContext[j].itemId && itemFulfillMent.getSublistValue( 'item',  'custcolzindar_idwebdetalle', i )==LineasContext[j].idweb )
+					if(	itemFulfillMent.getSublistValue( 'item',  'item', i )==LineasContext[j].itemId)
 					bandera=1;
 					
-				} 
+				}
 				if(bandera==0)
 				{
 					itemFulfillMent.selectLine( { sublistId: 'item', line: i } );
@@ -290,11 +287,7 @@
 						else return false;
 				
 	}
-
-
-
-
-
+	
 	function SepuedeFacturar (internalId)
 	{
 		 // Define search filters to find the sales order record
@@ -332,7 +325,7 @@
 
 	}
 
-	
+
 	handler.post = function( context ) {
 
 	log.error({
@@ -344,91 +337,80 @@
 					
 			if(sumaCantidadTotal(context.lines))
 			{
-
-					//ARGREADO 30/03/2023 PARA VALIDAR SI YA TIENE FACTURA
+						//ARGREADO 30/03/2023 PARA VALIDAR SI YA TIENE FACTURA
 					if( SepuedeFacturar(context.createdfrom.id))
 					return { 'responseStructure': { 'codeStatus': 'NOK', 'descriptionStatus': 'FACTURA REPETIDA' }, 'internalId': 0 };
 					//ARGREADO 30/03/2023 PARA VALIDAR SI YA TIENE FACTURA
 
-			log.audit( 'CONTEXT', JSON.stringify( context ) );
-			var itemFulfillMent = record.transform( {
-				fromType: context.createdfrom.recordType,
-				fromId: context.createdfrom.id,
-				toType: 'itemfulfillment',
-				isDynamic: true,
-			} );
-			itemFulfillMent.setValue( 'tranid', context.tranid );
-			var trandate;
-			if ( context.trandate ) {
-				trandate = format.parse( context.trandate, 'date' );
+				log.audit( 'CONTEXT', JSON.stringify( context ) );
+				var itemFulfillMent = record.transform( {
+					fromType: context.createdfrom.recordType,
+					fromId: context.createdfrom.id,
+					toType: 'itemfulfillment',
+					isDynamic: true,
+					} );
+				itemFulfillMent.setValue( 'tranid', context.tranid );
+				var trandate;
+				if ( context.trandate ) {
+					trandate = format.parse( context.trandate, 'date' );
+				}
+				itemFulfillMent.setValue( 'trandate', ( trandate || new Date() ) );
+				if ( context.postingperiod ) {
+					itemFulfillMent.setValue( 'postingperiod', context.postingperiod.id  );
+				}
+				itemFulfillMent.setValue( 'memo', context.notes );
+				itemFulfillMent.setValue( 'shipstatus', context.shipstatus.value );
+				itemFulfillMent.setValue( 'status', context.shipstatus.txt );
+				itemFulfillMent.setValue( 'shipcarrier', context.shipCarrier );
+				itemFulfillMent.setValue( 'shipaddress', context.shipAddress );
+				itemFulfillMent.setValue( 'shipcountry', context.shipcountry );
+				itemFulfillMent.setValue( 'shipzip', context.shipzip );
+				addItemFulfillMentLines( itemFulfillMent, context );
+				var itemFulfillMentId = itemFulfillMent.save();
+				log.audit( 'itemFulfillMent ID', JSON.stringify( itemFulfillMentId ) );
+				//SE  FACTURA  EL PEDIDO  YA QUE SE TERMINA EL ITEMFULFILLMENT
+				
+				try
+				{
+					var billRecord = record.transform({
+						fromType: record.Type.SALES_ORDER,
+						fromId: context.createdfrom.id,
+						toType: record.Type.INVOICE,
+						isDynamic: true
+					});
+					billRecord.setValue('custbody_nso_due_condition',3);
+					var hoy = new Date();
+					var receipt_date2 = format.parse( hoy, 'date' );
+					billRecord.setValue('custbody_nso_indr_receipt_date',receipt_date2);
+					///*Disc prov
+					var total = billRecord.getValue({fieldId:'total'});
+					var disc = billRecord.getValue({fieldId:'custbody_nso_indr_client_discount'});
+					disc = parseFloat(disc)/100;
+					var discAmount = total * disc;
+					log.debug('total: ', total);
+					log.error('discount: ', disc);
+					log.debug('discountAmount: ', discAmount.toFixed(4));
+					billRecord.setValue('custbody_zindar_wmsclave',context.wms);
+					billRecord.setValue('custbody_nso_indr_total_discount',discAmount.toFixed(4));
+					billRecord.setValue('custbody_nso_indr_discount_16p',discAmount.toFixed(2));
+					billRecord.setValue('custbody_nso_indr_zero_tax_discount', 0);
+					// /*END Disc
+					log.debug('AntesGuardarInvoice', 'ENTRA');
+					var idInvoice = billRecord.save({ ignoreMandatoryFields: true });
+					log.debug('DespuesGuardarInvoice', 'ENTRA');
+					log.debug('idInvoice', idInvoice);
+					log.error('Antes de cerrar SO','');
+					//AQUI   CERRAMOS EL PEDIDO SI ES QUE QUEDÓ PARCIAL Y GENERAMOS VENTAPERDIDA
+				
+				
+			
+				} catch ( e ) {
+						log.error( 'POST', JSON.stringify( e ) );
+						var errorText = 'ERROR CODE: ' + e.name + 'DESCRIPTION: ' + e.message;
+						return { 'responseStructure': { 'codeStatus': 'NOK', 'descriptionStatus': 'ERROR AL FACTURAR' + errorText }, 'internalId': 0};
+				} 
 			}
-			itemFulfillMent.setValue( 'trandate', ( trandate || new Date() ) );
-			if ( context.postingperiod ) {
-				itemFulfillMent.setValue( 'postingperiod', context.postingperiod.id  );
-			}
-			itemFulfillMent.setValue( 'memo', context.notes );
-			itemFulfillMent.setValue( 'shipstatus', context.shipstatus.value );
-			itemFulfillMent.setValue( 'status', context.shipstatus.txt );
-			itemFulfillMent.setValue( 'shipcarrier', context.shipCarrier );
-			itemFulfillMent.setValue( 'shipaddress', context.shipAddress );
-			itemFulfillMent.setValue( 'shipcountry', context.shipcountry );
-			itemFulfillMent.setValue( 'shipzip', context.shipzip );
-			addItemFulfillMentLines( itemFulfillMent, context );
-			var itemFulfillMentId = itemFulfillMent.save();
-            log.audit( 'itemFulfillMent ID', JSON.stringify( itemFulfillMentId ) );
-            //SE  FACTURA  EL PEDIDO  YA QUE SE TERMINA EL ITEMFULFILLMENT
-			
-            try{
-              var billRecord = record.transform({
-                fromType: record.Type.SALES_ORDER,
-                fromId: context.createdfrom.id,
-                toType: record.Type.INVOICE,
-                isDynamic: true
-            });
-            billRecord.setValue('custbody_nso_due_condition',3);
-            var hoy = new Date();
-            var receipt_date2 = format.parse( hoy, 'date' );
-            billRecord.setValue('custbody_nso_indr_receipt_date',receipt_date2);
-              ///*Disc prov
-			  log.error('Unificado','SI');
-            var total = billRecord.getValue({fieldId:'total'});
-          	var disc =  context.unificado==true?context.lines[0].DescuentoPP: billRecord.getValue({fieldId:'custbody_nso_indr_client_discount'});
-          	disc = parseFloat(disc)/100;
-            var discAmount = total * disc;
-          	log.debug('total: ', total);
-          	log.debug('discount: ', disc);
-            log.debug('discountAmount: ', discAmount.toFixed(4));
-			billRecord.setValue('custbody_zindar_wmsclave',context.wms);
-            billRecord.setValue('custbody_nso_indr_total_discount',discAmount.toFixed(4));
-            billRecord.setValue('custbody_nso_indr_discount_16p',discAmount.toFixed(2));
-            billRecord.setValue('custbody_nso_indr_zero_tax_discount', 0);
-			billRecord.setValue('custbody_nso_id_web', context.lines[0].IDWEB);
-			billRecord.setValue('custbodycustbody_num_cotizacion',context.cotizacion)
-			
-			if(context.unificado==true)
-			{
-				billRecord.setValue('custbody_nso_payment_terms',context.lines[0].Plazo);
-			}
-
-			
-
-             // /*END Disc
-			 log.debug('AntesGuardarInvoice', 'ENTRA');
-			var idInvoice = billRecord.save({ ignoreMandatoryFields: true });
-			log.debug('DespuesGuardarInvoice', 'ENTRA');
-			log.debug('idInvoice', idInvoice);
-			log.error('Antes de cerrar SO','');
-			//AQUI   CERRAMOS EL PEDIDO SI ES QUE QUEDÓ PARCIAL Y GENERAMOS VENTAPERDIDA
-		
-			
-         
-            } catch ( e ) {
-                    log.error( 'POST', JSON.stringify( e ) );
-                    var errorText = 'ERROR CODE: ' + e.name + 'DESCRIPTION: ' + e.message;
-                    return { 'responseStructure': { 'codeStatus': 'NOK', 'descriptionStatus': 'ERROR AL FACTURAR' + errorText }, 'internalId': 0};
-            } 
-		}
-			cerrarSaleOrder(context.createdfrom.id,context.lines);  
+			cerrarSaleOrder(context.createdfrom.id);  
 
 
 			return { 'responseStructure': { 'codeStatus': 'OK', 'descriptionStatus': '' }, 'internalId': idInvoice };
@@ -481,12 +463,11 @@
 		}
 	}
 	
-	function cerrarSaleOrder(saleOrderID,lines)
+	function cerrarSaleOrder(saleOrderID)
     {
         try
         {
-         
-			var idweb=lines[0].IDWEB;
+             
         var SaleOrder = record.load({ type: record.Type.SALES_ORDER, id: saleOrderID    });
   
           if(SaleOrder.getValue('orderstatus')=='D' ||SaleOrder.getValue('orderstatus')=='D')
@@ -494,12 +475,18 @@
 			  log.error('si entra a cerrar SO','');
               var VentaPerdidaLineas= [];
               log.error('LINEAS',SaleOrder.getLineCount({sublistId: 'item'}));
-              for (var i = 0; i < SaleOrder.getLineCount({sublistId: 'item'}); i++) 
-			  {
+              for (var i = 0; i < SaleOrder.getLineCount({sublistId: 'item'}); i++) {
               
-				
-				if(idweb==SaleOrder.getSublistValue( { sublistId: 'item', line: i, fieldId: 'custcolzindar_idwebdetalle'} ))
-				{
+                  /*if(SaleOrder.getSublistValue( { sublistId: 'item', line: i, fieldId: 'quantityfulfilled' } )==0)
+                  {
+                      
+                  SaleOrder.setSublistValue({
+                                                  sublistId: 'item',
+                                                  fieldId: 'isclosed',
+                                                  line: i,
+                                                  value: true
+                                              });
+                  }*/
                   if(SaleOrder.getSublistValue( { sublistId: 'item', line: i, fieldId: 'quantityfulfilled' } )<SaleOrder.getSublistValue( { sublistId: 'item', line: i, fieldId: 'quantity' } ))
                   {
                       log.error('Detecta Parcial','si'+SaleOrder.getSublistText({ sublistId: 'item', line: i, fieldId: 'item' }));
@@ -514,7 +501,6 @@
                           cantidad:  (SaleOrder.getSublistValue( { sublistId: 'item', line: i, fieldId: 'quantity' } )-SaleOrder.getSublistValue( { sublistId: 'item', line: i, fieldId: 'quantityfulfilled' } ))
                       });
                   }
-				}
               }
              
               SaleOrder.save({ ignoreMandatoryFields: true });

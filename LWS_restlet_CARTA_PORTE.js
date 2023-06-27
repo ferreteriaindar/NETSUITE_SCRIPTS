@@ -1,167 +1,147 @@
 /**
- *@NApiVersion 2.x
- *@NScriptType Restlet
- *@Autor ROBERTO VELASCO LARIOS
- *@Company INIDAR PERRROS
- *@NModuleScope Public
-  *@Description Script encargado de  cerrar el pedido,o una linea de un pedido
- */
-
-  define( ['N/http','N/format', 'N/log', 'N/record',  'N/search','N/encode','N/file' ], function( http,format,log,record,  search,encode,file ) {
-
-    var handler = {};
+ * @NApiVersion 2.x
+ * @NScriptType UserEventScript
+ * @Autor ROBERTO VELASCO LARIOS
+ * @NModuleScope Public
+ * @Company INDAR
+ * @NModuleScope Public
+ *
+*/
 
 
-    handler.post = function( context )
-    {
+define(['SuiteScripts/INDAR SCRIPTS/httpService',"N/runtime",'N/record','N/file','N/encode'], function (httpService,runtime,record,file,encode) {
+
+    var exports = {};
+    function afterSubmit(scriptContext) {
+
+        try
+        {
+        var valoresIF = {};
+        var viejo = scriptContext.oldRecord;
+        if(viejo)
+       var nuevo = record.load({ type : viejo.type, id : viejo.id });
+       log.error({
+           title: 'ID',
+           details: nuevo.getValue({ fieldId : 'id'})
+       });
       
-      var PDF=  generaCartaPorte(context);
+        var codigoRepuesta = nuevo.getValue({fieldId : 'custbody_fe_sf_codigo_respuesta' });
+        var codigoRepuestaOld=viejo.getValue({fieldId : 'custbody_fe_sf_codigo_respuesta' });
 
-      if(PDF!=null)
-              //return { 'responseStructure': { 'codeStatus': 'OK', 'descriptionStatus': PDF.getContents()}, 'internalId': 0};
-              return { 'responseStructure': { 'codeStatus': 'OK', 'descriptionStatus': 'OK'}, 'internalId': 0};
-        else
-        return { 'responseStructure': { 'codeStatus': 'NO K', 'descriptionStatus': ''}, 'internalId': 0};
+        log.error('codigo',codigoRepuesta);
+        log.error('codigoOLD',codigoRepuestaOld);
+            if(codigoRepuesta=='200.0')
+            {
+                log.error('ENTRA','si');
+            var idXML=nuevo.getValue({fieldId : 'custbody_fe_sf_xml_sat' });
+            var idPDFL=nuevo.getValue({fieldId : 'custbody_fe_sf_pdf' });
+                var xml=  file.load({
+                    id : idXML
+                });
+                var pdf =file.load({
+                    id : idPDFL
+                });
+              //  log.error('xml',xml);
+               // var urls =regresarURLS(currentRecord.getValue({ fieldId: 'custbody_fe_sf_xml_sat' }),currentRecord.getValue({ fieldId: 'custbody_fe_sf_pdf' }));
+                
+                        valoresIF =
+                        {
+                            InternalId : nuevo.getValue({fieldId : 'id' }),
+                            createdfrom : nuevo.getValue({fieldId : 'createdfrom'}),
+                            XML : fromBase64( xml.getContents()),
+                            PDF: 'https://5327814.app.netsuite.com'+pdf.url
 
+
+
+                        };
+                    
+                 //       var archivo = generaArchivo(JSON.stringify( valoresIF ), nuevo.getValue({fieldId : 'id' }));
+  log.error('response',JSON.stringify( valoresIF ))
+                   var response=    httpService.post('api/Embarque/CartaPorteGetXmlModel', valoresIF );
+              log.error('response',JSON.stringify( response ));
+                    // return { 'responseStructure': { 'codeStatus': 'OK', 'descriptionStatus': PDF.getContents()}, 'internalId': 0};
+            }
+
+        }catch(e)
+        {
+            log.debug( 'GET', JSON.stringify( e ) );
+
+        }            
+    }
+
+
+    function generaArchivo( contenido, nombreArchivo ) {
+ 
+        try {
+  
+          var fileObjPDF = null,
+              fileObj = file.create( {
+                  name:     'CP_XML_'+ nombreArchivo + '.json',
+                  fileType:    file.Type.PLAINTEXT,
+                  contents:    contenido,
+                  description: 'Archivo .json pra la inegración de órdenes de Venta',
+                  encoding:     file.Encoding.UTF8,
+                  folder:       68,
+                  isOnline:     true
+              });
+  
+        } catch( e ){
+  
+              log.error('Error al guardar el archivo', e );
+              return null;
+  
+        }
+  
+          return fileObj.save();
+      }
+
+    function regresarURLS(idXML,idPDF)
+    {
+        var urlsaux=[]
+        //log.error('regresaURLS','si');  
        
+         var archivo= file.load({id:idXML});
+
+         if(archivo.isOnline==false)
+         {
+           //  log.error('lo hace vivo', 'si')
+             archivo.isOnline = true;
+             idarchivo = archivo.save();
+              archivo =  file.load({id:idarchivo});
+         }
+      //   log.error('archivourl',archivo.url);
+        urlsaux.push("https://5327814.app.netsuite.com"+archivo.url);
+
+
+        var archivo2= file.load({id:idPDF});
+     //   log.error('esOFFILINE',archivo2.isOnline);
+        if(archivo2.isOnline==false)
+        {
+        //    log.error('lo hace vivo', 'si')
+            archivo2.isOnline = true;
+            idarchivo2 = archivo2.save();
+             archivo2 =  file.load({id:idarchivo2});
+        }
+      //  log.error('archivo2url',archivo2.url);
+        urlsaux.push("https://5327814.app.netsuite.com"+archivo2.url);
+        return urlsaux;
     
-  
-    };
-
-    function obtenerIDFulfillment(createdFrom)
-    {
-        var idFullfilment;
-        var json=[];
-        var customerSearchObj = search.create({
-          type: "itemfulfillment",
-          filters:
-            [
-                ["type","anyof","ItemShip"], 
-                "AND", 
-                ["mainline","is","T"], 
-                "AND", 
-                ["createdfrom","anyof",createdFrom]
-            ],
-            columns:
-            [
-                search.createColumn({name: "internalid", label: "Internal ID"})
-            ]
-      });
-      var resultados=  customerSearchObj.runPaged({
-        pageSize: 1000
-      });
-      var k = 0;
-        resultados.pageRanges.forEach(function(pageRange) {
-          var pagina = resultados.fetch({ index: pageRange.index });
-          pagina.data.forEach(function(r) {
-              k++
-          
-         
-                 idFullfilment= Number( r.getValue({name:'internalid'}));
-         
-          
-            });
-        });
-
-        return idFullfilment;
-
 
     }
 
 
-    function MandarJsonFulfillment(idFullfilment,rfc,idJson,json64Timbrar)
-    {
-        var Fulfillment = record.load({ type: record.Type.ITEM_FULFILLMENT, id: idFullfilment  });
 
-        Fulfillment.setValue({fieldId:'custbody_fe_rfc_cfdi_33',value:rfc});
-      /*  Fulfillment.save({
-            enableSourcing: true,
-            ignoreMandatoryFields: true
-        });*/
-        Fulfillment.setValue({fieldId:'custbody_uso_cfdi_fe_imr_33',value:22});
-        Fulfillment.setValue({fieldId:'custbody_fe_complementos_imr',value:7});
-        Fulfillment.setValue({fieldId:'custbodyimr_complementocartaportejson',value:idJson});
-         var hoy = new Date();
-            var receipt_date2 = format.parse( hoy, 'date' );
-            Fulfillment.setValue({fieldId:'custbody_fecha_de_timbrado',value:receipt_date2});
-        Fulfillment.save({
-            enableSourcing: true,
-            ignoreMandatoryFields: true
+
+    function fromBase64(stringInput){
+        return encode.convert({
+            string: stringInput,
+            inputEncoding: encode.Encoding.UTF_8,
+            outputEncoding: encode.Encoding.BASE_64
         });
-
-    
-        return Fulfillment.getValue( {  fieldId: 'custbody_fe_sf_pdf' } );
-
-
-
-
-
-
-
-
     }
-
-
-   function generaCartaPorte(context)
-   {
-    var complementoCP = record.create({
-        type: 'customrecordimr_fe_complementocartaporte',
-        isDynamic: true
-        });
-
-        
-            var json=fromBase64( context.json64);
-            log.error({
-                title: 'SIN 64',
-                details: json
-            });
-        complementoCP.setValue({fieldId:'custrecordjson_complementocp',value:json});
-      var idJson=  complementoCP.save({ignoreMandatoryFields:true});
-      log.error({title: 'idJson', details: idJson });
-
-      var idFullfilment=obtenerIDFulfillment(context.createdFrom);
-      log.error({ title: 'idFullfilment',details: idFullfilment  });
-      var idPDF=MandarJsonFulfillment(idFullfilment,context.rfc,idJson,context.json64Timbrar);
-                log.error({
-                    title: 'idPDF',
-                    details: idPDF
-                })
-  
-                /*
-      var PDF= regresaPDF(idFullfilment);
-      log.error({
-          title: 'PDF',
-          details: PDF
-      });  
-      return PDF; */
-      return 'OK'
-      
-
-   }
-
-
-
-   function regresaPDF(idFullfilment)
-   {
-    var Fulfillment = record.load({ type: 'ITEMFULFILLMENT', id: idFullfilment  });
+    
   
 
-     var IDpdf=     Fulfillment.getValue( {  fieldId: 'custbody_fe_sf_pdf' } );
-     var PDF= file.load({
-        id: IDpdf
-        }); 
-
-        return PDF;
-
-   }
-
-   function fromBase64(stringInput){
-    return encode.convert({
-        string: stringInput,
-        inputEncoding: encode.Encoding.BASE_64,
-        outputEncoding: encode.Encoding.UTF_8
-    });
-}
-
-    return handler;
+    exports.afterSubmit = afterSubmit;
+    return exports;
 });
