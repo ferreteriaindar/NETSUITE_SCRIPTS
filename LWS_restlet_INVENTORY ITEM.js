@@ -108,13 +108,13 @@
  
                              RankingPza              : currentRecord.getValue( { fieldId : 'custitem_ranking_pza' } ),
                              RankingImp              : currentRecord.getValue( { fieldId : 'custitem_ranking_imp' } ),
-                             IndarExcepcion          : currentRecord.getValue( { fieldId : 'custitem_indar_excepcion' } ),
-                             IndarExplicacion        : currentRecord.getValue( { fieldId : 'custitem_indar_explicacion' } ),
+                             IndarExcepcion          : '', //currentRecord.getValue( { fieldId : 'custitem_indar_excepcion' } ),
+                             IndarExplicacion        : '', //currentRecord.getValue( { fieldId : 'custitem_indar_explicacion' } ),
                              CostoEstandar           : currentRecord.getValue( { fieldId : 'custitem_costo_estandar' } ),
                              Sustitutos               : currentRecord.getValue( { fieldId : 'custitem_sustitutos' } ),
                              CodigoSustituto         : currentRecord.getValue( { fieldId : 'custitem_codigo_sustituto' } ),
                              custitem_multiplos_ordenar        : currentRecord.getValue( { fieldId : 'custitem_multiplos_ordenar' } ),
-                             MensajeEmergente        : currentRecord.getValue( { fieldId : 'custitem_mensaje_emergente' } ),
+                             MensajeEmergente        : '',// currentRecord.getValue( { fieldId : 'custitem_mensaje_emergente' } ),
                              Id                                : currentRecord.getValue( { fieldId : 'id' } ),
                              Type                              : currentRecord.getValue( { fieldId : 'type' } ),
                              Itemid                            : currentRecord.getValue( { fieldId : 'itemid' } ),
@@ -172,7 +172,16 @@
                                CP_ClaveMaterialPeligroso          : currentRecord.getValue({ fieldId: 'custitem_imr_cmcp_clave_material_pelig' }),
                                CP_PesoUnitario                    : currentRecord.getValue({ fieldId: 'custitem_imr_cmcp_peso_unitario' }),
                                CP_ClaveUnidadPeso                 : currentRecord.getValue({ fieldId: 'custitem_imr_cmcp_clave_unidad_peso' }),
-                               CP_ClaveEmbalajePeligrosos         : currentRecord.getValue({ fieldId: 'custitem_imr_cmcp_clave_embalaje' })
+                               CP_ClaveEmbalajePeligrosos         : currentRecord.getValue({ fieldId: 'custitem_imr_cmcp_clave_embalaje' }),
+                               destacado                          : currentRecord.getValue({ fieldId: 'custitem_zindar_itemdestacado' }),
+                               lanzamiento                          : currentRecord.getValue({ fieldId: 'custitem_zindar_lanzamiento' }),
+                               Rama1                              : currentRecord.getValue({ fieldId: 'custitem_zindar_rama1' }), 
+                               Rama2                              : currentRecord.getValue({ fieldId: 'custitem_zindar_rama2' }), 
+                               Rama3                              : currentRecord.getValue({ fieldId: 'custitem_zindar_rama3' }), 
+                               Rama1Descripcion                              : currentRecord.getValue({ fieldId: 'custitem_zindar_rama1_desc' }), 
+                               Rama2Descripcion                              : currentRecord.getValue({ fieldId: 'custitem_zindar_rama2_desc' }), 
+                               Rama2Descripcion                              : currentRecord.getValue({ fieldId: 'custitem_zindar_rama3_desc' }), 
+                               
   
                            
                            

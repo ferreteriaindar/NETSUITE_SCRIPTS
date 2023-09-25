@@ -167,25 +167,30 @@
 
       handler.beforeSubmit = function beforeSubmitDescuentos(context) {
 
-        if ( context.type != context.UserEventType.CREATE  ) {
-          return true;
-        }
-
           try {
 
               var newRecord = context.newRecord;
               var campo = newRecord.getValue({fieldId: 'customform'});
-              log.debug('CONTEXT',context.type);
-              if(context.type!='create')
-              {
-                log.debug('tranid',newRecord.getValue({fieldId: 'customform'}));
-              }
+           
+              
+         
               var entraDesarrollo = newRecord.getValue({fieldId: 'custbody_nso_no_promo'});
 
               log.debug('No promo', entraDesarrollo);
-            if(newRecord.getValue({fieldId: 'entity'})==41473)
+            if(newRecord.getValue({fieldId: 'billaddresslist'})=="344336")
             {
               log.error('ROBERTO','MI PEDIDO')
+            }
+             if(newRecord.getValue({fieldId: 'entity'})==41473)
+            {
+              log.error('ROBERTO','MI PEDIDO')
+              log.debug('json',newRecord);
+              const start = new Date();
+              var hours = start.getHours();
+              var minutes = start.getMinutes();
+              var seconds = start.getSeconds();
+              var miliseconds =start.getMilliseconds();
+              log.debug('HORA EXACTA',hours + ":" + minutes + ":" + seconds + ":" +miliseconds);
             }
 
               if(entraDesarrollo)  {
@@ -196,7 +201,28 @@
               if(context.type != 'create' && context.type != 'edit') {
                 return;
               }
+      
+              if(newRecord.getValue({fieldId: 'entity'})==41473)
+              {
+              log.debug('yaaplicopromos PRIMERA',newRecord.getValue('custbody_zindar_yaaplicopromos')+'**'+ newRecord.getValue('id'));
+              }
+              if(newRecord.getValue('entity')==518869)
+              {
+                log.debug('ORIGSTATUS',newRecord.getValue('origstatus'));
+                log.debug('ORDERSTATUS',newRecord.getValue('orderstatus'));
 
+              }
+              if(newRecord.getValue('entity')==518869 && (newRecord.getValue('origstatus')=='D'|| newRecord.getValue('origstatus')=='E'))
+              {
+                log.debug('ME SALÍ','SI');
+              return;
+              }
+
+                if(newRecord.getValue({fieldId: 'entity'})==41473)
+                {
+                    newRecord.setValue({fieldId:'custbody_zindar_yaaplicopromos',value:true});
+                    log.debug('yaaplicopromos SEGUNDA',newRecord.getValue('custbody_zindar_yaaplicopromos')+'**'+ newRecord.getValue('id'));
+                }
               //preguntamos si es form INDAR-PEDIDO MANUAL
               if(campo == 104)
               {

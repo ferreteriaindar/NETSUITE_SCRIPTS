@@ -82,7 +82,7 @@ define(['SuiteScripts/INDAR SCRIPTS/LWS_HTTP_CONNECTION','N/util',  'N/error', '
                     SaleDate: currentRecord.getValue({fieldId:'saleseffectivedate'}),
                     LeadSource: currentRecord.getValue({fieldId:'leadsource'}),
                     DepartamentoCliente: currentRecord.getValue({fieldId:'custbody2'}),
-                    TipoPedido:Number( currentRecord.getValue({fieldId:'custbody_tipo_pedido'})),
+                    TipoPedido:Number( currentRecord.getValue({fieldId:'custbody_nso_tipo_orden'})),
                    // ClienteContado: Number( currentRecord.getValue({fieldId:'custbody_tipo_pedido'})),
                    ClienteContado:  currentRecord.getValue({fieldId:'custbody_cte_contado'})=='Crédito'?0:1,
                     RFC: currentRecord.getValue({fieldId:'custbody_rfc'}),
@@ -113,15 +113,16 @@ define(['SuiteScripts/INDAR SCRIPTS/LWS_HTTP_CONNECTION','N/util',  'N/error', '
                     responseCfdi: currentRecord.getValue({fieldId:'custbody_fe_sf_mensaje_respuesta'}),
                     wmsclave: currentRecord.getValue({fieldId:'custbody_zindar_wmsclave'}),
                     urlXML:     urls.length>0? urls[0]:'',
-                    urlsPDF:    urls.length>0? urls[1]:'',
+                    urlPDF:    urls.length>0? urls[1]:'',
+                  TipoEntrega: currentRecord.getValue({fieldId:'custbody_zindar_tipo_entrega'})
                    
                 };
               //  Invoice.lineItems= { item:lineas };
               log.error('XML',Invoice.urlXML);
-              log.erro('PDF',Invoice.urlsPDF);
+              log.error('PDF',Invoice.urlsPDF);
               Factura.Invoice=Invoice; // JSON.stringify(Invoice);
               Factura.InvoicesDetail=lineas;
-     //  log.error('json',JSON.stringify(Factura));
+      // log.error('json',JSON.stringify(Factura));
        Factura=JSON.stringify(Factura);
                 var startTime = util.nanoTime();
            
@@ -168,31 +169,33 @@ define(['SuiteScripts/INDAR SCRIPTS/LWS_HTTP_CONNECTION','N/util',  'N/error', '
         {
             var urlsaux=[]
             //log.error('regresaURLS','si');  
-           
-             var archivo= file.load({id:idXML});
-             log.error('esOFFILINE',archivo.isOnline);
-             if(archivo.isOnline==false)
-             {
-               //  log.error('lo hace vivo', 'si')
-                 archivo.isOnline = true;
-                 idarchivo = archivo.save();
-                  archivo =  file.load({id:idarchivo});
-             }
-          //   log.error('archivourl',archivo.url);
-            urlsaux.push("https://5327814.app.netsuite.com"+archivo.url);
+            if(idXML!='' && idPDF!='')
+           {
+                var archivo= file.load({id:idXML});
+                log.error('esOFFILINE',archivo.isOnline);
+                if(archivo.isOnline==false)
+                {
+                //  log.error('lo hace vivo', 'si')
+                    archivo.isOnline = true;
+                    idarchivo = archivo.save();
+                    archivo =  file.load({id:idarchivo});
+                }
+            //   log.error('archivourl',archivo.url);
+                urlsaux.push("https://5327814.app.netsuite.com"+archivo.url);
 
 
-            var archivo2= file.load({id:idPDF});
-         //   log.error('esOFFILINE',archivo2.isOnline);
-            if(archivo2.isOnline==false)
-            {
-            //    log.error('lo hace vivo', 'si')
-                archivo2.isOnline = true;
-                idarchivo2 = archivo2.save();
-                 archivo2 =  file.load({id:idarchivo2});
+                var archivo2= file.load({id:idPDF});
+            //   log.error('esOFFILINE',archivo2.isOnline);
+                if(archivo2.isOnline==false)
+                {
+                //    log.error('lo hace vivo', 'si')
+                    archivo2.isOnline = true;
+                    idarchivo2 = archivo2.save();
+                    archivo2 =  file.load({id:idarchivo2});
+                }
+            //  log.error('archivo2url',archivo2.url);
+                urlsaux.push("https://5327814.app.netsuite.com"+archivo2.url);
             }
-          //  log.error('archivo2url',archivo2.url);
-            urlsaux.push("https://5327814.app.netsuite.com"+archivo2.url);
             return urlsaux;
         
 

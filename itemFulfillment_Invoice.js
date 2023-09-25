@@ -114,13 +114,15 @@
 	}
 	
 	function addItemFulfillMentLines( itemFulfillMent, context ) {
+
+   
 		var itemsPosition = {};
 		var LineasFulfillMent=[];
 		var LineasContext=[];
 		//Se llena arreglo  de la lista de articulos y cantidad que tiene  Fulfillmnet
 		for ( var i = 0; i < itemFulfillMent.getLineCount( 'item' ); i ++ ) {
 			itemsPosition[ itemFulfillMent.getSublistValue( 'item',  'item', i ) ] = i;
-			LineasFulfillMent.push({itemId: itemFulfillMent.getSublistValue( 'item',  'item', i ),quantity: itemFulfillMent.getSublistValue( 'item',  'quantity', i ), line:itemFulfillMent.getSublistValue( 'item',  'line', i ),idweb:itemFulfillMent.getSublistValue( 'item',  'custcolzindar_idwebdetalle', i )});
+			LineasFulfillMent.push({itemId: itemFulfillMent.getSublistValue( 'item',  'item', i ),quantity: itemFulfillMent.getSublistValue( 'item',  'quantity', i ), line:itemFulfillMent.getSublistValue( 'item',  'line', i ),idweb:itemFulfillMent.getSublistValue( 'item',  'custcol_zindar_idweb_det', i )});
 		}
 		//Se llena arreglo de la lista de articulos del context
 
@@ -137,14 +139,14 @@
 		log.error('LineasContext',LineasContext);
 		for(var i=0;i<LineasFulfillMent.length;i++)
 		{
-		//	log.error('LineaFulfill',LineasFulfillMent[i].line);
+			//log.error('LineaFulfill',LineasFulfillMent[i].line);
 			itemFulfillMent.selectLine( { sublistId: 'item', line: i } );
 			
 			itemFulfillMent.setCurrentSublistValue( 'item', 'apply', 'T' );
 			var  itemId=itemFulfillMent.getCurrentSublistValue('item','item');
-			var  IDWEB=itemFulfillMent.getCurrentSublistValue('item','custcolzindar_idwebdetalle');
+			var  IDWEB=itemFulfillMent.getCurrentSublistValue('item','custcol_zindar_idweb_det');
 			
-		//	log.error('itemActual',itemId);
+			//log.error('itemActual',itemId);
 			// se recorre  el context por cada linea del fulfillment
 			for(var j=0;j<LineasContext.length;j++)
 			{
@@ -153,6 +155,12 @@
 					log.error('LINEA',LineasContext[j].itemId+'*'+LineasContext[j].idweb);
 					itemFulfillMent.setCurrentSublistValue( { sublistId: 'item', fieldId: 'location', value: LineasContext[j].location } );
 					
+					if(LineasFulfillMent[i].quantity==0) //SIGNIFICA QUE EN ESE MOMENTO NO HAY MERCANCIA RESERVADO EN NETSUITE Y MANDAMOS ERROR EN EL SAI
+					{
+
+						return { 'responseStructure': { 'codeStatus': 'NOK', 'descriptionStatus': 'INVENTARIO INCORRECTO REVISAR' }, 'internalId': 0 };
+					}
+
 					if(LineasFulfillMent[i].quantity<LineasContext[j].quantity)
 					{
 						//log.error('entraResta','si');
@@ -218,7 +226,7 @@
 			{
 				var bandera=0
 				for (var j = 0; j < LineasContext.length; j++) {
-					if(	itemFulfillMent.getSublistValue( 'item',  'item', i )==LineasContext[j].itemId && itemFulfillMent.getSublistValue( 'item',  'custcolzindar_idwebdetalle', i )==LineasContext[j].idweb )
+					if(	itemFulfillMent.getSublistValue( 'item',  'item', i )==LineasContext[j].itemId && itemFulfillMent.getSublistValue( 'item',  'custcol_zindar_idweb_det', i )==LineasContext[j].idweb )
 					bandera=1;
 					
 				} 
@@ -283,7 +291,7 @@
 						//log.error({title: 'item',details: lines[i].itemId});
 						suma=suma+ Number( lines[i].quantity);
 					}
-					log.error({title: 'suma',details: suma});
+				//	log.error({title: 'suma',details: suma});
 
 						if (suma>0)
 						return true;
@@ -339,7 +347,8 @@
 		title: 'INICIA SCRIPT',
 		details: context.createdfrom.id
 	});
-      log.error('WMS',context.wms);
+	log.error('CHECKunificado',context);
+      //log.error('WMS',context.wms);
 		try {
 					
 			if(sumaCantidadTotal(context.lines))
@@ -389,10 +398,13 @@
             var hoy = new Date();
             var receipt_date2 = format.parse( hoy, 'date' );
             billRecord.setValue('custbody_nso_indr_receipt_date',receipt_date2);
-              ///*Disc prov
-			  log.error('Unificado','SI');
+              
+			
+			  log.error('CHECKunificado',context.unificado);
             var total = billRecord.getValue({fieldId:'total'});
-          	var disc =  context.unificado==true?context.lines[0].DescuentoPP: billRecord.getValue({fieldId:'custbody_nso_indr_client_discount'});
+          	var disc =  context.unificado===true?context.lines[0].DescuentoPP: billRecord.getValue({fieldId:'custbody_nso_indr_client_discount'});
+			
+
           	disc = parseFloat(disc)/100;
             var discAmount = total * disc;
           	log.debug('total: ', total);
@@ -405,9 +417,14 @@
 			billRecord.setValue('custbody_nso_id_web', context.lines[0].IDWEB);
 			billRecord.setValue('custbodycustbody_num_cotizacion',context.cotizacion)
 			
-			if(context.unificado==true)
+			if(context.unificado===true)
 			{
+				log.error('Unificado','SI');
+				log.error('descuentopp',context.lines[0].DescuentoPP);
+			  	log.error('lines',context.lines);
+				  log.error('plazo',context.lines[0].Plazo);
 				billRecord.setValue('custbody_nso_payment_terms',context.lines[0].Plazo);
+				billRecord.setValue('custbody_nso_indr_client_discount',context.lines[0].DescuentoPP);
 			}
 
 			
@@ -493,12 +510,12 @@
           {
 			  log.error('si entra a cerrar SO','');
               var VentaPerdidaLineas= [];
-              log.error('LINEAS',SaleOrder.getLineCount({sublistId: 'item'}));
+            //  log.error('LINEAS',SaleOrder.getLineCount({sublistId: 'item'}));
               for (var i = 0; i < SaleOrder.getLineCount({sublistId: 'item'}); i++) 
 			  {
               
 				
-				if(idweb==SaleOrder.getSublistValue( { sublistId: 'item', line: i, fieldId: 'custcolzindar_idwebdetalle'} ))
+				if(idweb==SaleOrder.getSublistValue( { sublistId: 'item', line: i, fieldId: 'custcol_zindar_idweb_det'} ))
 				{
                   if(SaleOrder.getSublistValue( { sublistId: 'item', line: i, fieldId: 'quantityfulfilled' } )<SaleOrder.getSublistValue( { sublistId: 'item', line: i, fieldId: 'quantity' } ))
                   {
@@ -569,7 +586,7 @@
                     ventaPerdidaART.save({ignoreMandatoryFields:true});
                    
 			}
-			enviarEmail(saleOrder.getValue('id'));
+			//enviarEmail(saleOrder.getValue('id'));
 			
 	 };
 	 
@@ -581,19 +598,19 @@
 		log.error('ENVIAR EMAIL','SI');
   
       var myvar = '<h3 style="text-align: center;"><span style="background-color: #ff9900; color: #ffffff;">AVISO</span></h3>'+
-      '<p style="text-align: left;">Este correo es para avisarte  que algunas partidas  del pedido <strong> '+SaleOrder.getValue('tranid')+' </strong> del cliente <strong>'+SaleOrder.getText('entity')+' </strong> no fueron surtidas. El resto de artículos de este pedido seguira su proceso normal de surtido. Según creas conveniente, avisa a tu cliente. Este correo es informativo, favor de no contestarlo. </p>'+
+      '<p style="text-align: left;">Este correo es para avisarte  que algunas partidas  del pedido <strong> '+SaleOrder.getValue('tranid')+' </strong> de la cotizacion:<strong> '+SaleOrder.getValue('custbodycustbody_num_cotizacion')+'  </strong> del cliente <strong>'+SaleOrder.getText('entity')+' </strong> no fueron surtidas. El resto de artículos de este pedido seguira su proceso normal de surtido. Según creas conveniente, avisa a tu cliente. Este correo es informativo, favor de no contestarlo. </p>'+
       '<p style="text-align: left;"></p>'+
       '<ul>'+
       '';
-      log.error('LINEAS',SaleOrder.getLineCount({sublistId: 'item'}));
+    //  log.error('LINEAS',SaleOrder.getLineCount({sublistId: 'item'}));
      
       for (var i = 0; i < SaleOrder.getLineCount({sublistId: 'item'}); i++) {
-        log.error('cerrado',SaleOrder.getSublistValue( { sublistId: 'item', line: i, fieldId: 'isclosed' } ));
-        log.error('cerradoText',SaleOrder.getSublistText( { sublistId: 'item', line: i, fieldId: 'isclosed' } ));
+      //  log.error('cerrado',SaleOrder.getSublistValue( { sublistId: 'item', line: i, fieldId: 'isclosed' } ));
+      //  log.error('cerradoText',SaleOrder.getSublistText( { sublistId: 'item', line: i, fieldId: 'isclosed' } ));
         if(SaleOrder.getSublistText( { sublistId: 'item', line: i, fieldId: 'isclosed' } )=='T')
                   {
 					 
-                    log.error('entra','si');
+                   // log.error('entra','si');
                       myvar=myvar+'  <li><strong>'+SaleOrder.getSublistText({sublistId: 'item', line: i, fieldId: 'item'})+'</strong>      '+(SaleOrder.getSublistValue({sublistId: 'item', line: i, fieldId: 'quantity'})-SaleOrder.getSublistValue( { sublistId: 'item', line: i, fieldId: 'quantityfulfilled' } ))+'  '+SaleOrder.getSublistText({sublistId: 'item', line: i, fieldId: 'units'})+'</li>'
                   }
       };
